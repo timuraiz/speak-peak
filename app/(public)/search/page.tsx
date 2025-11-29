@@ -18,6 +18,15 @@ export default function SearchPage() {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        // Redirect to connecting page after 2 seconds
+        const timeout = setTimeout(() => {
+            router.push('/connecting');
+        }, 2000);
+
+        return () => clearTimeout(timeout);
+    }, [router]);
+
     const formatTime = (seconds: number): string => {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
