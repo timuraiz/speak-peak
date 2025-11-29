@@ -15,7 +15,12 @@ export default function ConnectingPage() {
                 <div className="flex gap-1.5 items-center">
                     <div className="w-1 h-1 bg-accent rounded-full"></div>
                     <p className="text-xs font-light text-dark">
-                        Connecting...
+                        Connecting
+                        <span className="connecting-dots">
+                            <span className="dot">.</span>
+                            <span className="dot">.</span>
+                            <span className="dot">.</span>
+                        </span>
                     </p>
                 </div>
             </div>
