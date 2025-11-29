@@ -3,6 +3,7 @@ import Button from "@/app/components/Button";
 import Queue from "../components/Queue";
 import OnlineBadge from "../components/OnlineBadge";
 import TimeSpentCard from "../components/TimeSpentCard";
+import DailyGoal from "../components/DailyGoal";
 
 export default function Home() {
   return (
@@ -31,9 +32,7 @@ export default function Home() {
             <Queue />
           </div>
         </div>
-        <div className="border border-border p-8 rounded-[20px] md:rounded-[24px] lg:rounded-[28px]">
-          Grid Item 3
-        </div>
+        <DailyGoal />
         <TimeSpentCard />
       </div>
     </div>
