@@ -3,13 +3,14 @@
 :root {
   --background: #FAFAFA;
   --foreground: #171717;
-  
+
   /* Color Tokens */
   --color-dark: rgba(73, 73, 73, 1);
   --color-dark-70: rgba(73, 73, 73, 0.7);
   --color-dark-50: rgba(73, 73, 73, 0.5);
   --color-dark-20: rgba(73, 73, 73, 0.2);
-  --color-dark-8: rgba(73, 73, 73, 0.08);;
+  --color-dark-8: rgba(73, 73, 73, 0.08);
+  ;
   --color-white: #FFFFFF;
   --color-accent: rgba(38, 161, 255, 1);
   --color-accent-70: rgba(38, 161, 255, 0.7);
@@ -35,7 +36,7 @@
   --color-background: var(--background);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
+
   /* Color Tokens for Tailwind */
   --color-dark: var(--color-dark);
   --color-dark-70: var(--color-dark-70);
@@ -88,4 +89,120 @@ body {
   font-size: 14px;
   font-weight: 500;
   line-height: normal;
+}
+
+.loader-outer {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: outerPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes outerPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  30% {
+    transform: scale(1.6);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(2.8);
+    opacity: 0.25;
+  }
+
+  70% {
+    transform: scale(1.6);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.loader-border {
+  position: absolute;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 3px solid rgba(38, 161, 255, 0.12);
+  opacity: 0;
+  animation: borderPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes borderPulse {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  80% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+.loader-inner {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0;
+  animation: innerPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes innerPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  35% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+
+  45% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  55% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  70% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
 }

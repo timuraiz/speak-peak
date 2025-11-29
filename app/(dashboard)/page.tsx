@@ -1,3 +1,6 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import Fire from "@/app/components/Fire";
 import Button from "@/app/components/Button";
 import Queue from "../components/Queue";
@@ -6,6 +9,12 @@ import TimeSpentCard from "../components/TimeSpentCard";
 import DailyGoal from "../components/DailyGoal";
 
 export default function Home() {
+  const router = useRouter();
+
+  const handleStartCall = () => {
+    router.push('/search');
+  };
+
   return (
     <div className="py-8.75 w-[520px] mx-auto">
       <div className="flex justify-between items-center">
@@ -28,7 +37,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex gap-4">
-            <Button>Start a call</Button>
+            <Button onClick={handleStartCall}>Start a call</Button>
             <Queue />
           </div>
         </div>
