@@ -3,7 +3,7 @@ export default function AccountItem() {
     <div className="flex justify-between items-center">
       <div className="flex gap-2 items-center">
         <img className="w-6 h-6" src="/avatar.png" alt="Alex Smith" />
-        <span className="text-14 font-light text-dark">Alex Smith</span>
+        <span className="text-14 font-light text-dark">Tim Aizatvafin</span>
       </div>
       <a href="#">
         <img
