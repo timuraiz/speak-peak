@@ -18,14 +18,14 @@ export default function SearchPage() {
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        // Redirect to connecting page after 2 seconds
-        const timeout = setTimeout(() => {
-            router.push('/connecting');
-        }, 2000);
+    // useEffect(() => {
+    //     // Redirect to connecting page after 2 seconds
+    //     const timeout = setTimeout(() => {
+    //         router.push('/connecting');
+    //     }, 2000);
 
-        return () => clearTimeout(timeout);
-    }, [router]);
+    //     return () => clearTimeout(timeout);
+    // }, [router]);
 
     const formatTime = (seconds: number): string => {
         const minutes = Math.floor(seconds / 60);
@@ -38,7 +38,7 @@ export default function SearchPage() {
     };
 
     return (
-        <div className="h-screen flex flex-col items-center justify-center px-4 py-8">
+        <div className="h-screen flex flex-col items-center justify-end px-4 py-8">
             <div className="flex flex-col items-center gap-8 max-w-md w-full">
                 {/* Main search section */}
                 <div className="flex flex-col items-center gap-6 w-full">
