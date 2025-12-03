@@ -1,40 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import Button from "@/app/components/Button";
+import CrownDisplay from "@/app/components/CrownDisplay";
 
 
 export default function CallPage() {
-    const [hasCrown, setHasCrown] = useState(true);
+    const [GotIt, setGotIt] = useState(false);
 
     return (
         <div className="relative h-full">
-            <div className="bg-background rounded-3xl h-[calc(100%-32px)] flex flex-col items-center justify-center gap-8">
-                {hasCrown ? (
-                    <>
-                        <img src="/Call/crown.svg" alt="Manager" className="w-20 h-20" />
-                        <div className="flex flex-col items-center justify-center gap-3">
-                            <p className="text-xs font-bold text-dark-50">YOU HAVE THE CROWN</p>
-                            <p className="text-2xl font-semibold text-dark text-center">The right to choose<br />an activity is yours</p>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <img src="/Call/crown-grey.svg" alt="Partner has crown" className="w-20 h-20" />
-                        <div className="flex flex-col items-center justify-center gap-3">
-                            <p className="text-xs font-bold text-dark-50">YOUR PARTNER GOT THE CROWN</p>
-                            <p className="text-2xl font-semibold text-dark text-center">The right to choose<br />an activity remains with him</p>
-                        </div>
-                    </>
-                )}
-            </div>
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-2 z-10">
-                <div className="bg-white rounded-3xl pt-2 px-2">
-                    <Button variant="primary-no-icon" className="mx-auto" onClick={() => setHasCrown(!hasCrown)}>
-                        <p className="text-base font-semibold text-white">Got it</p>
-                    </Button>
+            {!GotIt ? <CrownDisplay hasCrown={true} onGotIt={() => setGotIt(!GotIt)} /> :
+                <div className='flex flex-col justify-center items-center gap-8 h-full'>
+                    <img src="/Call/iconsax-mouse-square.svg" alt="" className="w-7 h-7" />
+                    <div className='flex flex-col gap-3'>
+                        <h2 className='text-dark text-xl font-semibold text-center'>Choose an activity</h2>
+                        <p className='text-dark-50 text-sm font-normal text-center'>Choose one of the options<br />
+                            on the left to begin.
+                        </p>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
     );
 }
