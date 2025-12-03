@@ -5,6 +5,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'primary-no-icon';
     size?: 'small' | 'medium' | 'large';
     children: React.ReactNode;
+    icon?: string;
 }
 
 export default function Button({
@@ -13,6 +14,7 @@ export default function Button({
     children,
     className = '',
     disabled,
+    icon,
     ...props
 }: ButtonProps) {
     const isPrimaryVariant = variant === 'primary' || variant === 'primary-no-icon';
@@ -49,7 +51,7 @@ export default function Button({
         >
             <div className={variant === 'primary' ? 'flex gap-1.5' : 'flex items-center justify-center'}>
                 {variant === 'primary' && (
-                    <Image src="/iconsax-play.svg" alt="Play" width={16} height={16} className="brightness-0 invert" />
+                    <Image src={icon || "/iconsax-play.svg"} alt="Icon" width={16} height={16} className="brightness-0 invert" />
                 )}
                 {children}
             </div>
