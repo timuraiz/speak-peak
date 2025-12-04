@@ -2,17 +2,28 @@
 
 import { useCallContext } from '@/app/(call)/layout';
 import GuessTheObject from './GuessTheObject';
+import HelpWords from './HelpWords';
 
 export default function ActivityContent() {
     const { activeCard } = useCallContext();
 
     if (activeCard === 'object') {
-        return <GuessTheObject />;
+        return (
+            <div className="flex flex-col gap-12">
+                <GuessTheObject />
+                <HelpWords />
+            </div>
+        );
     }
 
     if (activeCard === 'topic') {
         // TODO: Add SuggestTopic component when ready
-        return null;
+        return (
+            <div className="flex flex-col gap-12">
+                <div>Topic content will go here</div>
+                <HelpWords />
+            </div>
+        );
     }
 
     return (
