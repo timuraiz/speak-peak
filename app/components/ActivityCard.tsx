@@ -9,9 +9,11 @@ interface ActivityCardProps {
     topic?: boolean;
     object?: boolean;
     onClick?: () => void;
+    disabled?: boolean;
+    badge?: string;
 }
 
-export default function ActivityCard({ icon, title, description, alt = "activity icon", isPressed = false, topic = false, object = false, onClick }: ActivityCardProps) {
+export default function ActivityCard({ icon, title, description, alt = "activity icon", isPressed = false, topic = false, object = false, onClick, disabled = false, badge }: ActivityCardProps) {
     const getBorderClass = () => {
         if (!isPressed) {
             return "border-border";
@@ -27,9 +29,18 @@ export default function ActivityCard({ icon, title, description, alt = "activity
 
     return (
         <button
-            onClick={onClick}
-            className={`flex flex-col gap-5 w-full border ${getBorderClass()} p-5 pr-10 rounded-2xl cursor-pointer hover:bg-hover transition-colors duration-150 text-left`}
+            onClick={disabled ? undefined : onClick}
+            disabled={disabled}
+            className={`flex flex-col gap-5 w-full border ${getBorderClass()} p-5 rounded-2xl transition-colors duration-150 text-left relative ${disabled
+                ? "opacity-50 cursor-not-allowed"
+                : "cursor-pointer hover:bg-hover"
+                }`}
         >
+            {badge && (
+                <span className="absolute top-2 right-2 px-2 py-1.5 rounded-full bg-[var(--color-accent-12)] text-[var(--color-accent)] text-xs font-medium">
+                    Soon
+                </span>
+            )}
             <img src={icon} alt={alt} className="w-5 h-5" />
             <div className="flex flex-col gap-2 ">
                 <h2 className="text-base font-semibold text-dark">{title}</h2>

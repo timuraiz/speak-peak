@@ -43,6 +43,8 @@ export default function CallLayout({
                 isPressed={activeCard === 'object'}
                 object={true}
                 onClick={() => setActiveCard(activeCard === 'object' ? null : 'object')}
+                disabled={true}
+                badge="soon"
               />
               <ActivityCard
                 icon="/Call/iconsax-message-notif.svg"
