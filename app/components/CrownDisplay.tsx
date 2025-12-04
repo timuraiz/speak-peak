@@ -9,7 +9,7 @@ interface CrownDisplayProps {
 
 export default function CrownDisplay({ hasCrown, onGotIt }: CrownDisplayProps) {
     return (
-        <div className="flex flex-col relative h-full p-48">
+        <div className="flex flex-col relative h-full p-32">
             <div className="bg-background rounded-3xl h-full flex flex-col items-center justify-center gap-8 relative">
                 {hasCrown ? (
                     <>

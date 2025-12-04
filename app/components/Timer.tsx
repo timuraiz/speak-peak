@@ -1,12 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function Timer() {
-    const [seconds, setSeconds] = useState(30);
+interface TimerProps {
+    initialSeconds?: number;
+    onTimerEnd?: () => void;
+}
+
+export default function Timer({ initialSeconds = 30, onTimerEnd }: TimerProps) {
+    const [seconds, setSeconds] = useState(initialSeconds);
+    const hasCalledOnTimerEnd = useRef(false);
 
     useEffect(() => {
-        if (seconds <= 0) return;
+        if (seconds <= 0) {
+            if (onTimerEnd && !hasCalledOnTimerEnd.current) {
+                hasCalledOnTimerEnd.current = true;
+                onTimerEnd();
+            }
+            return;
+        }
 
         const interval = setInterval(() => {
             setSeconds(prev => {
@@ -18,7 +30,7 @@ export default function Timer() {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [seconds]);
+    }, [seconds, onTimerEnd]);
 
     const formatTime = (totalSeconds: number): string => {
         const minutes = Math.floor(totalSeconds / 60);

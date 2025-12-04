@@ -1,17 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { useCallContext } from '@/app/(call)/layout';
 import GuessTheObject from './GuessTheObject';
 import HelpWords from './HelpWords';
 
 export default function ActivityContent() {
     const { activeCard } = useCallContext();
+    const [timerEnded, setTimerEnded] = useState(false);
 
     if (activeCard === 'object') {
         return (
-            <div className="flex flex-col gap-12">
-                <GuessTheObject />
-                <HelpWords />
+            <div className="flex flex-col gap-12 h-full">
+                <GuessTheObject onTimerEndChange={setTimerEnded} />
+                {!timerEnded && <HelpWords />}
             </div>
         );
     }

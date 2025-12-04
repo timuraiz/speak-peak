@@ -1,14 +1,43 @@
 'use client';
 
+import { useState } from 'react';
 import Button from "@/app/components/Button";
 import Timer from "@/app/components/Timer";
+import Congratulations from "@/app/components/Congratulations";
 
 interface GuessTheObjectProps {
     onRight?: () => void;
     onSkip?: () => void;
+    onLeave?: () => void;
+    picturesCount?: number;
+    onTimerEndChange?: (ended: boolean) => void;
 }
 
-export default function GuessTheObject({ onRight, onSkip }: GuessTheObjectProps) {
+export default function GuessTheObject({ onRight, onSkip, onLeave, picturesCount = 14, onTimerEndChange }: GuessTheObjectProps) {
+    const [timerEnded, setTimerEnded] = useState(false);
+    const [timerKey, setTimerKey] = useState(0);
+
+    const handleTimerEnd = () => {
+        setTimerEnded(true);
+        onTimerEndChange?.(true);
+    };
+
+    const handlePlayAgain = () => {
+        setTimerEnded(false);
+        setTimerKey(prev => prev + 1); // Reset timer by changing key
+        onTimerEndChange?.(false);
+    };
+
+    if (timerEnded) {
+        return (
+            <Congratulations
+                picturesCount={picturesCount}
+                onPlayAgain={handlePlayAgain}
+                onLeave={onLeave}
+            />
+        );
+    }
+
     return (
         <div className="flex flex-col relative">
             <div className="bg-background rounded-3xl h-fit flex flex-col items-center justify-end gap-10 p-5 pt-14" >
@@ -21,7 +50,7 @@ export default function GuessTheObject({ onRight, onSkip }: GuessTheObjectProps)
                 </div>
 
                 <div className="w-full flex justify-start">
-                    <Timer />
+                    <Timer key={timerKey} onTimerEnd={handleTimerEnd} />
                 </div>
             </div>
             <div className="bg-white rounded-3xl pt-2 px-2 flex justify-center gap-2 absolute -bottom-5 left-1/2 transform -translate-x-1/2">
