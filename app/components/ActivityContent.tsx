@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useCallContext } from '@/app/(call)/layout';
 import GuessTheObject from './GuessTheObject';
 import HelpWords from './HelpWords';
+import TopicContent from './TopicContent';
 
 export default function ActivityContent() {
     const { activeCard } = useCallContext();
@@ -19,10 +20,9 @@ export default function ActivityContent() {
     }
 
     if (activeCard === 'topic') {
-        // TODO: Add SuggestTopic component when ready
         return (
-            <div className="flex flex-col gap-12">
-                <div>Topic content will go here</div>
+            <div className="flex flex-col gap-12 h-full">
+                <TopicContent />
                 <HelpWords />
             </div>
         );

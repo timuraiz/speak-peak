@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import CrownDisplay from "@/app/components/CrownDisplay";
 import ActivityContent from "@/app/components/ActivityContent";
-import { useCallContext } from '../layout';
 
 export default function CallPage() {
     const [GotIt, setGotIt] = useState(false);
