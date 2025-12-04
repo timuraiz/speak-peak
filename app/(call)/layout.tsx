@@ -65,7 +65,15 @@ export default function CallLayout({
             </div>
           </div>
         </aside>
-        <main className="flex-1 min-w-0 overflow-auto bg-white border border-border rounded-3xl p-48">
+        <main className="flex-1 min-w-0 overflow-auto bg-white border border-border rounded-3xl p-8">
+          {activeCard && (
+            <div className="flex justify-start gap-2 cursor-pointer" onClick={() => setActiveCard(null)}>
+              <img src="/Call/ArrowLeft.svg" alt="Leave activity" className="w-5 h-5" />
+              <p className="text-sm font-medium text-dark-70">
+                Leave activity
+              </p>
+            </div>
+          )}
           {children}
         </main>
       </div>
