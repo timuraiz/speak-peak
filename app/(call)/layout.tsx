@@ -9,6 +9,10 @@ import LeaveActivityButton from "@/app/components/LeaveActivityButton";
 interface CallContextType {
   activeCard: string | null;
   setActiveCard: (card: string | null) => void;
+  isLeader: boolean;
+  setIsLeader: (isLeader: boolean) => void;
+  isMuted: boolean;
+  setIsMuted: (isMuted: boolean) => void;
 }
 
 const CallContext = createContext<CallContextType | undefined>(undefined);
@@ -27,9 +31,11 @@ export default function CallLayout({
   children: React.ReactNode;
 }>) {
   const [activeCard, setActiveCard] = useState<string | null>(null);
+  const [isLeader, setIsLeader] = useState<boolean>(true);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
 
   return (
-    <CallContext.Provider value={{ activeCard, setActiveCard }}>
+    <CallContext.Provider value={{ activeCard, setActiveCard, isLeader, setIsLeader, isMuted, setIsMuted }}>
       <div className="flex h-screen w-screen overflow-hidden p-4 gap-4">
         <aside className="w-[311px] flex-shrink-0 px-5 py-8 flex flex-col h-full justify-between items-start">
           <div className="w-full flex flex-col gap-7 items-start">
@@ -42,7 +48,7 @@ export default function CallLayout({
                 alt="gallery icon"
                 isPressed={activeCard === 'object'}
                 object={true}
-                onClick={() => setActiveCard(activeCard === 'object' ? null : 'object')}
+                onClick={isLeader ? () => setActiveCard(activeCard === 'object' ? null : 'object') : undefined}
                 disabled={true}
                 badge="soon"
               />
@@ -53,14 +59,15 @@ export default function CallLayout({
                 alt="message notification icon"
                 isPressed={activeCard === 'topic'}
                 topic={true}
-                onClick={() => setActiveCard(activeCard === 'topic' ? null : 'topic')}
+                onClick={isLeader ? () => setActiveCard(activeCard === 'topic' ? null : 'topic') : undefined}
+                disabled={!isLeader}
               />
             </div>
           </div>
           <div className="flex flex-col gap-7 w-full items-center">
             <div className="flex flex-col gap-2 w-full">
-              <Member />
-              <Member />
+              <Member isCurrentUser={true} />
+              <Member isCurrentUser={false} />
             </div>
             <div className="flex gap-2">
               <CallButton />
@@ -69,7 +76,7 @@ export default function CallLayout({
           </div>
         </aside>
         <main className="flex-1 gap-8 flex flex-col min-w-0 overflow-auto bg-white border border-border rounded-3xl p-8">
-          {activeCard && (
+          {activeCard && isLeader && (
             <LeaveActivityButton onClick={() => setActiveCard(null)} />
           )}
           {children}

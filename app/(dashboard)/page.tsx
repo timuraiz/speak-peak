@@ -7,6 +7,7 @@ import Queue from "../components/Queue";
 import OnlineBadge from "../components/OnlineBadge";
 import TimeSpentCard from "../components/TimeSpentCard";
 import DailyGoal from "../components/DailyGoal";
+import SnackBar from "../components/SnackBar";
 
 export default function Home() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function Home() {
   };
 
   return (
-    <div className="py-8.75 w-[520px] mx-auto">
+    <div className="py-8.75 w-[520px] mx-auto min-h-full flex flex-col">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Welcome back, Tim 👋</h1>
         <Fire streak={3} />
@@ -32,7 +33,7 @@ export default function Home() {
                 Speak with real person
               </h2>
               <p className="text-sm font-normal text-dark-70">
-                We’ll match you instantly with another learner
+                We'll match you instantly with another learner
               </p>
             </div>
           </div>
@@ -44,6 +45,10 @@ export default function Home() {
         <DailyGoal />
         <TimeSpentCard />
       </div>
+      <div className="mt-auto">
+        <SnackBar />
+      </div>
+
     </div>
   );
 }

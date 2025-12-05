@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCallContext } from '../(call)/layout';
 
 interface CallButtonProps {
     variant?: 'mute' | 'cancel';
 }
 
 export default function CallButton({ variant = 'mute' }: CallButtonProps) {
-    const [isMuted, setIsMuted] = useState(false);
+    const { isMuted, setIsMuted } = useCallContext();
     const [isHovered, setIsHovered] = useState(false);
     const [isPressed, setIsPressed] = useState(false);
     const router = useRouter();

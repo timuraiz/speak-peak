@@ -9,7 +9,7 @@ export default function CallPage() {
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="relative h-full">
-                {!GotIt ? <CrownDisplay hasCrown={true} onGotIt={() => setGotIt(!GotIt)} /> :
+                {!GotIt ? <CrownDisplay onGotIt={() => setGotIt(!GotIt)} /> :
                     <ActivityContent />
                 }
             </div>
