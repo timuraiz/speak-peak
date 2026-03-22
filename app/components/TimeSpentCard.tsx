@@ -42,7 +42,7 @@ export default function TimeSpentCard({
         {dailyData.map((timeSpent, i) => (
           <div
             key={i}
-            className={`w-4 h-4 rounded-full ${getHeatMapColor(timeSpent, dailyGoal)}`}
+            className={`w-full max-w-5 aspect-square rounded-full mx-auto ${getHeatMapColor(timeSpent, dailyGoal)}`}
           />
         ))}
       </div>

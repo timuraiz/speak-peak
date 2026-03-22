@@ -76,7 +76,12 @@ export default function LoginPage() {
     const { data: profile } = await supabase
       .from('profiles').select('onboarding_completed').eq('id', user!.id).single();
 
-    router.push(profile?.onboarding_completed ? '/' : '/onboarding');
+    if (profile?.onboarding_completed) {
+      sessionStorage.setItem('showWelcome', '1');
+      router.push('/');
+    } else {
+      router.push('/onboarding');
+    }
   };
 
   if (showOtp) {

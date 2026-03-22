@@ -15,6 +15,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   const { profile, user } = useAuth();
   const avatar = profile?.avatar ?? null;
+  const displayName = profile?.name ?? user?.email?.split('@')[0] ?? 'Account';
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border flex items-center justify-around px-4 py-3 z-40">
@@ -24,8 +25,13 @@ export default function BottomNav() {
           <Link
             key={item.href}
             href={item.soon ? '#' : item.href}
-            className={`flex flex-col items-center gap-1 ${item.soon ? 'opacity-40 pointer-events-none' : ''}`}
+            className={`flex flex-col items-center gap-1 relative ${item.soon ? 'opacity-40 pointer-events-none' : ''}`}
           >
+            {item.soon && (
+              <span className="absolute -top-1 -right-2 px-1 py-0.5 rounded-full bg-accent-12 text-accent text-[8px] font-medium leading-none">
+                soon
+              </span>
+            )}
             <Image
               src={item.icon}
               alt={item.label}
@@ -45,7 +51,7 @@ export default function BottomNav() {
         <div className="relative w-6 h-6 rounded-full overflow-hidden">
           <Image src={avatar ?? '/avatar.png'} alt="Account" fill />
         </div>
-        <span className="text-[10px] font-medium text-dark-50">Account</span>
+        <span className="text-[10px] font-medium text-dark-50">{displayName}</span>
       </div>
     </nav>
   );

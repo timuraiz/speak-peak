@@ -60,6 +60,7 @@ export default function OnboardingPage() {
     if (error) { console.error('profiles upsert error:', error); setLoading(false); return; }
 
     await refreshProfile();
+    sessionStorage.setItem('showWelcome', '1');
     router.push('/');
   };
 
