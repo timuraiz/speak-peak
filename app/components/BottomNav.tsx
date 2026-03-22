@@ -18,7 +18,7 @@ export default function BottomNav() {
   const displayName = profile?.name ?? user?.email?.split('@')[0] ?? 'Account';
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border flex items-center justify-around px-4 py-3 z-40">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border rounded-t-3xl flex items-center justify-around px-4 py-3 z-40">
       {items.map((item) => {
         const active = pathname === item.href;
         return (
