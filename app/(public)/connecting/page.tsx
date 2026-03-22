@@ -2,12 +2,14 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
+import Image from 'next/image';
 
 function ConnectingContent() {
   const router = useRouter();
   const params = useSearchParams();
   const roomId = params.get('roomId');
   const partnerName = params.get('partnerName') ?? 'Partner';
+  const partnerAvatar = typeof window !== 'undefined' ? (sessionStorage.getItem('partnerAvatar') || null) : null;
 
   useEffect(() => {
     if (!roomId) {
@@ -25,11 +27,9 @@ function ConnectingContent() {
   return (
     <div className="h-screen flex flex-col items-center justify-center px-4 py-8">
       <div className="flex flex-col items-center gap-6">
-        <img
-          src="/partner.png"
-          alt={partnerName}
-          className="w-24 h-24 rounded-full"
-        />
+        <div className="relative w-24 h-24 rounded-full overflow-hidden shrink-0">
+          <Image src={partnerAvatar ?? '/partner.png'} alt={partnerName} fill />
+        </div>
         <h2 className="text-xl font-semibold text-dark">{partnerName}</h2>
         <div className="flex gap-1.5 items-center">
           <div className="w-1 h-1 bg-accent rounded-full"></div>

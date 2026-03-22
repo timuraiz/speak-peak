@@ -1,115 +1,164 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Button from '@/app/components/Button'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Button from '@/app/components/Button';
+import InputField from '@/app/components/InputField';
+import { createClient } from '@/app/lib/supabase/client';
+import { useAuth } from '@/app/contexts/AuthContext';
+
+const AVATARS = [
+  'avatar picker.svg',
+  ...Array.from({ length: 29 }, (_, i) => `avatar picker-${i + 1}.svg`),
+];
+
+const steps = [
+  {
+    title: "Let's get to know each other.",
+    subtitle: "What's your name?",
+    hint: "We'll show your name to your speaking partner during the call",
+  },
+  {
+    title: "Let's give you a look.",
+    subtitle: 'Pick your avatar.',
+    hint: "We'll show your avatar to your speaking partner during the call",
+  },
+  {
+    title: "Let's set your daily goal.",
+    subtitle: "You'll make progress every day",
+    hint: null,
+  },
+];
 
 export default function OnboardingPage() {
-    const [step, setStep] = useState(1)
-    const [selectedLanguage, setSelectedLanguage] = useState<string>('')
-    const [selectedLevel, setSelectedLevel] = useState<string>('')
-    const [loading, setLoading] = useState(false)
-    const router = useRouter()
+  const [step, setStep] = useState(1);
+  const [name, setName] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState('');
+  const [goalHours, setGoalHours] = useState('');
+  const [goalMinutes, setGoalMinutes] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+  const { refreshProfile } = useAuth();
 
-    const languages = [
-        { id: 'english', name: 'English' },
-        { id: 'spanish', name: 'Spanish' },
-        { id: 'french', name: 'French' },
-        { id: 'german', name: 'German' },
-        { id: 'italian', name: 'Italian' },
-        { id: 'portuguese', name: 'Portuguese' },
-    ]
+  const handleComplete = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push('/login'); return; }
 
-    const levels = [
-        { id: 'beginner', name: 'Beginner' },
-        { id: 'intermediate', name: 'Intermediate' },
-        { id: 'advanced', name: 'Advanced' },
-    ]
+    const totalMinutes = (parseInt(goalHours || '0') * 60) + parseInt(goalMinutes || '0');
 
-    const handleComplete = async () => {
-        setLoading(true)
-        // TODO: Implement onboarding completion logic
-        setTimeout(() => {
-            setLoading(false)
-            router.push('/')
-        }, 500)
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id,
+      name: name.trim(),
+      avatar: selectedAvatar ? `/faces/${selectedAvatar}` : null,
+      daily_goal_minutes: totalMinutes || null,
+      onboarding_completed: true,
+    });
+
+    if (error) { console.error('profiles upsert error:', error); setLoading(false); return; }
+
+    await refreshProfile();
+    router.push('/');
+  };
+
+  const handleNext = () => {
+    if (step === 1) {
+      if (!name.trim()) { setNameError('Please enter your name'); return; }
+      setStep(2);
+    } else if (step === 2) {
+      setStep(3);
+    } else if (step === 3) {
+      handleComplete();
     }
+  };
 
-    const handleNext = () => {
-        if (step === 1 && selectedLanguage) {
-            setStep(2)
-        } else if (step === 2 && selectedLevel) {
-            handleComplete()
-        }
-    }
+  const current = steps[step - 1];
+  const isLastStep = step === steps.length;
 
-    return (
-        <div className="h-screen flex items-center justify-center px-4">
-            <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <div className="flex justify-center gap-2 mb-4">
-                        {[1, 2].map((s) => (
-                            <div
-                                key={s}
-                                className={`h-2 rounded-full transition-all ${s <= step ? 'bg-accent w-8' : 'bg-border w-2'
-                                    }`}
-                            />
-                        ))}
-                    </div>
-                    <h1 className="text-3xl font-semibold text-dark mb-2">
-                        {step === 1 ? 'What language do you want to learn?' : 'What\'s your level?'}
-                    </h1>
-                    <p className="text-sm text-dark-70">
-                        {step === 1
-                            ? 'Choose the language you want to practice'
-                            : 'Select your current proficiency level'}
-                    </p>
-                </div>
+  return (
+    <div className="h-screen flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md flex flex-col gap-8">
 
-                <div className="space-y-4 mb-8">
-                    {step === 1 ? (
-                        <div className="grid grid-cols-2 gap-3">
-                            {languages.map((lang) => (
-                                <button
-                                    key={lang.id}
-                                    onClick={() => setSelectedLanguage(lang.id)}
-                                    className={`p-4 rounded-2xl border-2 transition-all text-left ${selectedLanguage === lang.id
-                                        ? 'border-accent bg-accent/5'
-                                        : 'border-border bg-white hover:border-accent/50'
-                                        }`}
-                                >
-                                    <span className="text-sm font-medium text-dark">{lang.name}</span>
-                                </button>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {levels.map((level) => (
-                                <button
-                                    key={level.id}
-                                    onClick={() => setSelectedLevel(level.id)}
-                                    className={`w-full p-4 rounded-2xl border-2 transition-all text-left ${selectedLevel === level.id
-                                        ? 'border-accent bg-accent/5'
-                                        : 'border-border bg-white hover:border-accent/50'
-                                        }`}
-                                >
-                                    <span className="text-sm font-medium text-dark">{level.name}</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <Button
-                    onClick={handleNext}
-                    disabled={loading || (step === 1 && !selectedLanguage) || (step === 2 && !selectedLevel)}
-                    className="w-full"
-                    variant="primary-no-icon"
-                >
-                    {loading ? 'Completing...' : step === 2 ? 'Complete setup' : 'Continue'}
-                </Button>
-            </div>
+        {/* Heading */}
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-dark">{current.title}</h1>
+          <p className="text-2xl font-semibold text-dark-50">{current.subtitle}</p>
         </div>
-    )
-}
 
+        {/* Content */}
+        <div>
+          {step === 1 && (
+            <InputField
+              placeholder="Name"
+              value={name}
+              onChange={(e) => { setName(e.target.value); setNameError(''); }}
+              error={nameError}
+              autoFocus
+            />
+          )}
+
+          {step === 2 && (
+            <div className="grid grid-cols-5 gap-3">
+              {AVATARS.map((file) => (
+                <button
+                  key={file}
+                  onClick={() => setSelectedAvatar(file)}
+                  className={`rounded-full transition-all aspect-square overflow-hidden ${selectedAvatar === file ? 'ring-2 ring-accent ring-offset-2' : 'opacity-80 hover:opacity-100'}`}
+                >
+                  <img src={`/faces/${file}`} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="23"
+                  value={goalHours}
+                  onChange={(e) => setGoalHours(String(Math.min(23, Math.max(0, parseInt(e.target.value) || 0))))}
+                  placeholder="0"
+                  className="w-16 h-16 rounded-2xl bg-background text-center text-xl font-semibold text-dark outline-none focus:ring-2 focus:ring-accent"
+                />
+                <span className="text-xl font-semibold text-dark">h</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={goalMinutes}
+                  onChange={(e) => setGoalMinutes(String(Math.min(59, Math.max(0, parseInt(e.target.value) || 0))))}
+                  placeholder="0"
+                  className="w-16 h-16 rounded-2xl bg-background text-center text-xl font-semibold text-dark outline-none focus:ring-2 focus:ring-accent"
+                />
+                <span className="text-xl font-semibold text-dark">min</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Button + hint */}
+        <div className="flex flex-col items-center gap-3">
+          <Button
+            onClick={handleNext}
+            disabled={loading}
+            className="w-full"
+            variant="primary-no-icon"
+          >
+            {loading ? 'Saving...' : isLastStep ? 'Get Started' : 'Continue'}
+          </Button>
+          {current.hint && (
+            <p className="text-xs text-dark-50 text-center">{current.hint}</p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}

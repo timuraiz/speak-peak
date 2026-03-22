@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useCallContext } from "../(call)/layout";
 
 interface MemberProps {
@@ -5,13 +6,16 @@ interface MemberProps {
 }
 
 export default function Member({ isCurrentUser = false }: MemberProps) {
-    const { isLeader, isMuted } = useCallContext();
+    const { isLeader, isMuted, currentUser, partner } = useCallContext();
+    const person = isCurrentUser ? currentUser : partner;
     return (
         <div className="flex justify-between items-center w-full bg-white rounded-2xl p-4 pr-5">
             <div className="flex gap-3 items-center">
-                <img className="w-8 h-8" src="/avatar.png" alt="Alex Smith" />
+                <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
+                    <Image src={person.avatar ?? '/avatar.png'} alt={person.name} fill />
+                </div>
                 <div className="flex flex gap-1.5">
-                    <span className="text-base font-medium text-dark">John Doe</span>
+                    <span className="text-base font-medium text-dark">{person.name}</span>
                     {isCurrentUser && (
                         <span className="px-2 py-1 rounded-full bg-accent-12 text-accent text-xs font-medium">
                             You

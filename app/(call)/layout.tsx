@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
 import ActivityCard from "@/app/components/ActivityCard";
 import Member from "@/app/components/Member";
 import CallButton from "@/app/components/CallButton";
@@ -15,6 +16,8 @@ interface CallContextType {
   setIsLeader: (isLeader: boolean) => void;
   isMuted: boolean;
   setIsMuted: (isMuted: boolean) => void;
+  currentUser: { name: string; avatar: string | null };
+  partner: { name: string; avatar: string | null };
 }
 
 const CallContext = createContext<CallContextType | undefined>(undefined);
@@ -30,6 +33,12 @@ export function useCallContext() {
 function CallLayoutInner({ children }: { children: React.ReactNode }) {
   const params = useSearchParams();
   const roomId = params.get('roomId');
+  const partnerName = typeof window !== 'undefined' ? (sessionStorage.getItem('partnerName') || 'Partner') : 'Partner';
+  const partnerAvatar = typeof window !== 'undefined' ? (sessionStorage.getItem('partnerAvatar') || null) : null;
+
+  const { profile, user } = useAuth();
+  const currentUserName = profile?.name ?? user?.email?.split('@')[0] ?? 'You';
+  const currentUserAvatar = profile?.avatar ?? null;
 
   const [activeCard, setActiveCardState] = useState<string | null>(null);
   const [isLeader, setIsLeader] = useState<boolean>(
@@ -66,7 +75,11 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
   }, [isLeader, roomId]);
 
   return (
-    <CallContext.Provider value={{ activeCard, setActiveCard, isLeader, setIsLeader, isMuted, setIsMuted }}>
+    <CallContext.Provider value={{
+      activeCard, setActiveCard, isLeader, setIsLeader, isMuted, setIsMuted,
+      currentUser: { name: currentUserName, avatar: currentUserAvatar },
+      partner: { name: partnerName, avatar: partnerAvatar },
+    }}>
       <div className="flex h-screen w-screen overflow-hidden p-4 gap-4">
         <aside className="w-[311px] shrink-0 px-5 py-8 flex flex-col h-full justify-between items-start">
           <div className="w-full flex flex-col gap-7 items-start">

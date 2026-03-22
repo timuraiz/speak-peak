@@ -1,6 +1,7 @@
 interface QueueEntry {
   userId: string;
   name: string;
+  avatar: string | null;
   joinedAt: number;
 }
 
@@ -8,8 +9,10 @@ interface Room {
   roomId: string;
   user1Id: string;
   user1Name: string;
+  user1Avatar: string | null;
   user2Id: string;
   user2Name: string;
+  user2Avatar: string | null;
   createdAt: number;
 }
 
@@ -34,6 +37,7 @@ const roomActivity = g._roomActivity;
 export function joinQueue(
   userId: string,
   name: string,
+  avatar: string | null = null,
 ): { matched: boolean; roomId?: string; isLeader?: boolean } {
   // Clean up any stale room from a previous session
   if (userToRoom.has(userId)) {
@@ -56,8 +60,10 @@ export function joinQueue(
       roomId,
       user1Id: match.userId, // user1 = leader
       user1Name: match.name,
+      user1Avatar: match.avatar,
       user2Id: userId,
       user2Name: name,
+      user2Avatar: avatar,
       createdAt: Date.now(),
     };
     rooms.set(roomId, room);
@@ -68,7 +74,7 @@ export function joinQueue(
   }
 
   // No match — add to queue
-  queue.set(userId, { userId, name, joinedAt: Date.now() });
+  queue.set(userId, { userId, name, avatar, joinedAt: Date.now() });
   return { matched: false };
 }
 
@@ -87,11 +93,11 @@ export function getRoom(roomId: string): Room | undefined {
   return rooms.get(roomId);
 }
 
-export function getPartner(roomId: string, userId: string): { id: string; name: string } | null {
+export function getPartner(roomId: string, userId: string): { id: string; name: string; avatar: string | null } | null {
   const room = rooms.get(roomId);
   if (!room) return null;
-  if (room.user1Id === userId) return { id: room.user2Id, name: room.user2Name };
-  if (room.user2Id === userId) return { id: room.user1Id, name: room.user1Name };
+  if (room.user1Id === userId) return { id: room.user2Id, name: room.user2Name, avatar: room.user2Avatar };
+  if (room.user2Id === userId) return { id: room.user1Id, name: room.user1Name, avatar: room.user1Avatar };
   return null;
 }
 

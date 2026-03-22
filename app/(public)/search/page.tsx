@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Loader from '../../components/Loader';
 import Button from '../../components/Button';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 function getOrCreateUserId(): string {
   let userId = sessionStorage.getItem('userId');
@@ -16,6 +17,7 @@ function getOrCreateUserId(): string {
 
 export default function SearchPage() {
   const router = useRouter();
+  const { profile, user, loading } = useAuth();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const userIdRef = useRef<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -29,22 +31,27 @@ export default function SearchPage() {
   };
 
   useEffect(() => {
+    if (loading) return;
     if (joinedRef.current) return;
     joinedRef.current = true;
 
     const userId = getOrCreateUserId();
     userIdRef.current = userId;
 
-    const redirect = (roomId: string, isLeader: boolean, partner?: { name: string; id: string }) => {
+    const displayName = profile?.name ?? user?.email?.split('@')[0] ?? 'Anonymous';
+    const avatar = profile?.avatar ?? null;
+
+    const redirect = (roomId: string, isLeader: boolean, partner?: { name: string; id: string; avatar: string | null }) => {
       if (redirectedRef.current) return;
       redirectedRef.current = true;
       if (pollingRef.current) clearInterval(pollingRef.current);
       sessionStorage.setItem('isLeader', String(isLeader));
-      const params = new URLSearchParams({ roomId });
       if (partner) {
-        params.set('partnerName', partner.name);
-        params.set('partnerId', partner.id);
+        sessionStorage.setItem('partnerName', partner.name);
+        sessionStorage.setItem('partnerAvatar', partner.avatar ?? '');
       }
+      const params = new URLSearchParams({ roomId });
+      if (partner) params.set('partnerName', partner.name);
       router.push(`/connecting?${params.toString()}`);
     };
 
@@ -52,7 +59,7 @@ export default function SearchPage() {
     fetch('/api/queue/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, name: 'Anonymous' }),
+      body: JSON.stringify({ userId, name: displayName, avatar }),
     })
       .then((r) => r.json())
       .then((data) => {
@@ -78,7 +85,7 @@ export default function SearchPage() {
       clearInterval(timer);
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [router]);
+  }, [router, loading]);
 
   const handleCancel = async () => {
     if (pollingRef.current) clearInterval(pollingRef.current);

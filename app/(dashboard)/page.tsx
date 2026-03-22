@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/contexts/AuthContext';
+import Loader from '@/app/components/Loader';
 import Fire from "@/app/components/Fire";
 import Button from "@/app/components/Button";
 import Queue from "../components/Queue";
@@ -11,6 +13,10 @@ import SnackBar from "../components/SnackBar";
 
 export default function Home() {
   const router = useRouter();
+  const { user, profile, loading } = useAuth();
+  const displayName = profile?.name ?? user?.email?.split('@')[0] ?? 'there';
+
+  if (loading) return <div className="flex h-full items-center justify-center"><Loader /></div>;
 
   const handleStartCall = () => {
     router.push('/search');
@@ -19,7 +25,7 @@ export default function Home() {
   return (
     <div className="py-8.75 w-[520px] mx-auto min-h-full flex flex-col">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Welcome back, Tim 👋</h1>
+        <h1 className="text-2xl font-semibold">Welcome back, {displayName} 👋</h1>
         <Fire streak={3} />
       </div>
 
