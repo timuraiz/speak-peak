@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { useAudioCall } from '@/app/hooks/useAudioCall';
 import ActivityCard from "@/app/components/ActivityCard";
 import Member from "@/app/components/Member";
 import CallButton from "@/app/components/CallButton";
@@ -15,9 +16,10 @@ interface CallContextType {
   isLeader: boolean;
   setIsLeader: (isLeader: boolean) => void;
   isMuted: boolean;
-  setIsMuted: (isMuted: boolean) => void;
+  toggleMute: () => void;
   currentUser: { name: string; avatar: string | null };
   partner: { name: string; avatar: string | null };
+  partnerOnline: boolean;
 }
 
 const CallContext = createContext<CallContextType | undefined>(undefined);
@@ -44,8 +46,10 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
   const [isLeader, setIsLeader] = useState<boolean>(
     () => typeof window !== 'undefined' && sessionStorage.getItem('isLeader') === 'true'
   );
-  const [isMuted, setIsMuted] = useState<boolean>(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const userId = typeof window !== 'undefined' ? (sessionStorage.getItem('userId') || null) : null;
+
+  const { partnerOnline, isMuted, toggleMute } = useAudioCall({ roomId, userId, userName: currentUserName });
 
   // Leader: sync activity to server on change
   const setActiveCard = (card: string | null) => {
@@ -76,11 +80,18 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <CallContext.Provider value={{
-      activeCard, setActiveCard, isLeader, setIsLeader, isMuted, setIsMuted,
+      activeCard, setActiveCard, isLeader, setIsLeader, isMuted, toggleMute,
       currentUser: { name: currentUserName, avatar: currentUserAvatar },
       partner: { name: partnerName, avatar: partnerAvatar },
+      partnerOnline,
     }}>
       <div className="flex h-screen w-screen overflow-hidden p-4 gap-4">
+        {!partnerOnline && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-dark text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg">
+            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+            {partnerName} disconnected. Waiting for reconnect...
+          </div>
+        )}
         <aside className="w-[311px] shrink-0 px-5 py-8 flex flex-col h-full justify-between items-start">
           <div className="w-full flex flex-col gap-7 items-start">
             {isLeader ? (

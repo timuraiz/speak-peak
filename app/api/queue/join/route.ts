@@ -8,10 +8,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'userId and name are required' }, { status: 400 });
   }
 
-  const result = joinQueue(userId, name, avatar ?? null);
+  const result = await joinQueue(userId, name, avatar ?? null);
 
   if (result.matched && result.roomId) {
-    const partner = getPartner(result.roomId, userId);
+    const partner = await getPartner(result.roomId, userId);
     return NextResponse.json({ ...result, partner });
   }
 

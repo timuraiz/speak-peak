@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (roomId) {
-    leaveRoom(userId);
+    await leaveRoom(userId);
   } else {
-    leaveQueue(userId);
+    await leaveQueue(userId);
   }
 
   return NextResponse.json({ ok: true });

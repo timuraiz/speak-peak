@@ -8,10 +8,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'userId is required' }, { status: 400 });
   }
 
-  const status = getMatchStatus(userId);
+  const status = await getMatchStatus(userId);
 
   if (status.matched && status.roomId) {
-    const partner = getPartner(status.roomId, userId);
+    const partner = await getPartner(status.roomId, userId);
     return NextResponse.json({ matched: true, roomId: status.roomId, isLeader: status.isLeader, partner });
   }
 

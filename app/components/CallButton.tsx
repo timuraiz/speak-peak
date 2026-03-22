@@ -9,14 +9,14 @@ interface CallButtonProps {
 }
 
 export default function CallButton({ variant = 'mute' }: CallButtonProps) {
-    const { isMuted, setIsMuted } = useCallContext();
+    const { isMuted, toggleMute } = useCallContext();
     const [isHovered, setIsHovered] = useState(false);
     const [isPressed, setIsPressed] = useState(false);
     const router = useRouter();
 
     const handleClick = async () => {
         if (variant === 'mute') {
-            setIsMuted(!isMuted);
+            toggleMute();
         } else if (variant === 'cancel') {
             const userId = sessionStorage.getItem('userId');
             if (userId) {
@@ -31,17 +31,8 @@ export default function CallButton({ variant = 'mute' }: CallButtonProps) {
         }
     };
 
-    const handleMouseDown = () => {
-        if (variant === 'cancel') {
-            setIsPressed(true);
-        }
-    };
-
-    const handleMouseUp = () => {
-        if (variant === 'cancel') {
-            setIsPressed(false);
-        }
-    };
+    const handleMouseDown = () => setIsPressed(true);
+    const handleMouseUp = () => setIsPressed(false);
 
     const getIconSrc = () => {
         if (variant === 'cancel') {
@@ -71,19 +62,16 @@ export default function CallButton({ variant = 'mute' }: CallButtonProps) {
     };
 
     return (
-        <div
-            className="border border-border rounded-full cursor-pointer flex items-center justify-center w-12 h-12"
+        <button
+            className="border border-border rounded-full cursor-pointer flex items-center justify-center w-12 h-12 transition-transform active:scale-95"
             style={{ backgroundColor: getBackgroundColor() }}
             onClick={handleClick}
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => {
-                setIsHovered(false);
-                setIsPressed(false);
-            }}
+            onMouseLeave={() => { setIsHovered(false); setIsPressed(false); }}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
         >
             <img src={getIconSrc()} alt={getAltText()} className="w-5 h-5" />
-        </div>
+        </button>
     );
 }

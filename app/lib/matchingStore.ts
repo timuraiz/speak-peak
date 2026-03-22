@@ -1,3 +1,13 @@
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+const QUEUE_KEY = 'speak:queue';
+const TTL = 7200; // 2 hours
+
 interface QueueEntry {
   userId: string;
   name: string;
@@ -16,49 +26,31 @@ interface Room {
   createdAt: number;
 }
 
-// Use globalThis so state survives HMR module reloads in Next.js dev mode
-const g = globalThis as typeof globalThis & {
-  _queue: Map<string, QueueEntry>;
-  _rooms: Map<string, Room>;
-  _userToRoom: Map<string, string>;
-  _roomActivity: Map<string, string | null>;
-};
-
-if (!g._queue) g._queue = new Map();
-if (!g._rooms) g._rooms = new Map();
-if (!g._userToRoom) g._userToRoom = new Map();
-if (!g._roomActivity) g._roomActivity = new Map();
-
-const queue = g._queue;
-const rooms = g._rooms;
-const userToRoom = g._userToRoom;
-const roomActivity = g._roomActivity;
-
-export function joinQueue(
+export async function joinQueue(
   userId: string,
   name: string,
   avatar: string | null = null,
-): { matched: boolean; roomId?: string; isLeader?: boolean } {
+): Promise<{ matched: boolean; roomId?: string; isLeader?: boolean }> {
   // Clean up any stale room from a previous session
-  if (userToRoom.has(userId)) {
-    leaveRoom(userId);
-  }
+  await leaveRoom(userId);
 
-  // Find first waiting user that isn't us
-  let match: QueueEntry | null = null;
-  for (const [id, entry] of queue.entries()) {
-    if (id !== userId) {
-      match = entry;
-      queue.delete(id);
-      break;
+  // Atomically pop a waiting user from the queue
+  const raw = await redis.rpop<string>(QUEUE_KEY);
+
+  if (raw) {
+    const match: QueueEntry = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+    // Edge case: matched ourselves (shouldn't happen, but just in case)
+    if (match.userId === userId) {
+      await redis.lpush(QUEUE_KEY, JSON.stringify(match));
+      await redis.lpush(QUEUE_KEY, JSON.stringify({ userId, name, avatar, joinedAt: Date.now() }));
+      return { matched: false };
     }
-  }
 
-  if (match) {
     const roomId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const room: Room = {
       roomId,
-      user1Id: match.userId, // user1 = leader
+      user1Id: match.userId, // user1 = leader (was waiting)
       user1Name: match.name,
       user1Avatar: match.avatar,
       user2Id: userId,
@@ -66,61 +58,84 @@ export function joinQueue(
       user2Avatar: avatar,
       createdAt: Date.now(),
     };
-    rooms.set(roomId, room);
-    userToRoom.set(match.userId, roomId);
-    userToRoom.set(userId, roomId);
-    // joining user is user2, so not the leader
+
+    await Promise.all([
+      redis.set(`speak:room:${roomId}`, JSON.stringify(room), { ex: TTL }),
+      redis.set(`speak:userToRoom:${match.userId}`, roomId, { ex: TTL }),
+      redis.set(`speak:userToRoom:${userId}`, roomId, { ex: TTL }),
+    ]);
+
     return { matched: true, roomId, isLeader: false };
   }
 
   // No match — add to queue
-  queue.set(userId, { userId, name, avatar, joinedAt: Date.now() });
+  await redis.lpush(QUEUE_KEY, JSON.stringify({ userId, name, avatar, joinedAt: Date.now() }));
   return { matched: false };
 }
 
-export function getMatchStatus(
+export async function getMatchStatus(
   userId: string,
-): { matched: boolean; roomId?: string; isLeader?: boolean } {
-  const roomId = userToRoom.get(userId);
+): Promise<{ matched: boolean; roomId?: string; isLeader?: boolean }> {
+  const roomId = await redis.get<string>(`speak:userToRoom:${userId}`);
   if (roomId) {
-    const room = rooms.get(roomId);
-    return { matched: true, roomId, isLeader: room?.user1Id === userId };
+    const raw = await redis.get<string>(`speak:room:${roomId}`);
+    if (raw) {
+      const room: Room = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return { matched: true, roomId, isLeader: room.user1Id === userId };
+    }
   }
   return { matched: false };
 }
 
-export function getRoom(roomId: string): Room | undefined {
-  return rooms.get(roomId);
-}
-
-export function getPartner(roomId: string, userId: string): { id: string; name: string; avatar: string | null } | null {
-  const room = rooms.get(roomId);
-  if (!room) return null;
+export async function getPartner(
+  roomId: string,
+  userId: string,
+): Promise<{ id: string; name: string; avatar: string | null } | null> {
+  const raw = await redis.get<string>(`speak:room:${roomId}`);
+  if (!raw) return null;
+  const room: Room = typeof raw === 'string' ? JSON.parse(raw) : raw;
   if (room.user1Id === userId) return { id: room.user2Id, name: room.user2Name, avatar: room.user2Avatar };
   if (room.user2Id === userId) return { id: room.user1Id, name: room.user1Name, avatar: room.user1Avatar };
   return null;
 }
 
-export function leaveQueue(userId: string): void {
-  queue.delete(userId);
-}
-
-export function leaveRoom(userId: string): void {
-  const roomId = userToRoom.get(userId);
-  if (!roomId) return;
-  const room = rooms.get(roomId);
-  if (room) {
-    userToRoom.delete(room.user1Id);
-    userToRoom.delete(room.user2Id);
-    rooms.delete(roomId);
-    roomActivity.delete(roomId);
+export async function leaveQueue(userId: string): Promise<void> {
+  // Remove all entries for this userId from the queue
+  const items = await redis.lrange<string>(QUEUE_KEY, 0, -1);
+  for (const item of items) {
+    const entry: QueueEntry = typeof item === 'string' ? JSON.parse(item) : item;
+    if (entry.userId === userId) {
+      await redis.lrem(QUEUE_KEY, 1, item);
+    }
   }
 }
 
-export function setRoomActivity(roomId: string, activity: string | null): void {
-  roomActivity.set(roomId, activity);
+export async function leaveRoom(userId: string): Promise<void> {
+  const roomId = await redis.get<string>(`speak:userToRoom:${userId}`);
+  if (!roomId) return;
+
+  const raw = await redis.get<string>(`speak:room:${roomId}`);
+  if (raw) {
+    const room: Room = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    await Promise.all([
+      redis.del(`speak:userToRoom:${room.user1Id}`),
+      redis.del(`speak:userToRoom:${room.user2Id}`),
+      redis.del(`speak:room:${roomId}`),
+      redis.del(`speak:roomActivity:${roomId}`),
+    ]);
+  } else {
+    await redis.del(`speak:userToRoom:${userId}`);
+  }
 }
 
-export function getRoomActivity(roomId: string): string | null {
-  return roomActivity.get(roomId) ?? null;
+export async function setRoomActivity(roomId: string, activity: string | null): Promise<void> {
+  if (activity === null) {
+    await redis.del(`speak:roomActivity:${roomId}`);
+  } else {
+    await redis.set(`speak:roomActivity:${roomId}`, activity, { ex: TTL });
+  }
+}
+
+export async function getRoomActivity(roomId: string): Promise<string | null> {
+  return await redis.get<string>(`speak:roomActivity:${roomId}`);
 }
