@@ -14,10 +14,19 @@ export default function CallButton({ variant = 'mute' }: CallButtonProps) {
     const [isPressed, setIsPressed] = useState(false);
     const router = useRouter();
 
-    const handleClick = () => {
+    const handleClick = async () => {
         if (variant === 'mute') {
             setIsMuted(!isMuted);
         } else if (variant === 'cancel') {
+            const userId = sessionStorage.getItem('userId');
+            if (userId) {
+                await fetch('/api/queue/leave', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, roomId: true }),
+                });
+            }
+            sessionStorage.removeItem('isLeader');
             router.push('/');
         }
     };
