@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/contexts/AuthContext';
-import Loader from '@/app/components/Loader';
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/contexts/AuthContext";
+import Loader from "@/app/components/Loader";
 import Fire from "@/app/components/Fire";
 import Button from "@/app/components/Button";
 import Queue from "../components/Queue";
@@ -14,26 +14,35 @@ import SnackBar from "../components/SnackBar";
 export default function Home() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
-  const displayName = profile?.name ?? user?.email?.split('@')[0] ?? 'there';
+  const displayName = profile?.name ?? user?.email?.split("@")[0] ?? "there";
 
-  if (loading) return <div className="flex h-full items-center justify-center"><Loader /></div>;
+  if (loading)
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader />
+      </div>
+    );
 
   const handleStartCall = () => {
-    router.push('/search');
+    router.push("/search");
   };
 
   return (
-    <div className="py-8.75 w-[520px] mx-auto min-h-full flex flex-col">
+    <div className="py-6 px-4 md:py-8.75 md:w-[520px] md:px-0 mx-auto min-h-full flex flex-col">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Welcome back, {displayName} 👋</h1>
+        <h1 className="text-xl md:text-2xl font-semibold">
+          Welcome back, {displayName} 👋
+        </h1>
         <Fire streak={3} />
       </div>
 
-      <div className="grid grid-cols-2 grid-rows-2 gap-4 mt-7 h-[495px]">
-        <div className="relative flex flex-col gap-12 bg-background p-9 rounded-[20px] md:rounded-[24px] lg:rounded-[28px] col-span-2">
+      <div className="flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-3 md:gap-4 mt-5 md:mt-7 md:h-[495px]">
+        <div className="border border-border relative flex flex-col gap-6 md:gap-12 bg-background p-8 md:p-9 rounded-[20px] md:rounded-3xl lg:rounded-4xl col-span-2">
           <OnlineBadge count={231} className="absolute top-7 right-7" />
           <div className="flex flex-col gap-4.5">
-            <span className="text-xs font-bold text-dark-50">REAL PRACTICE</span>
+            <span className="text-xs font-bold text-dark-50">
+              REAL PRACTICE
+            </span>
             <div className="flex flex-col gap-2">
               <h2 className="text-xl font-semibold text-dark">
                 Speak with real person
@@ -43,7 +52,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 pb-1">
             <Button onClick={handleStartCall}>Start a call</Button>
             <Queue />
           </div>
@@ -54,7 +63,6 @@ export default function Home() {
       <div className="mt-auto">
         <SnackBar />
       </div>
-
     </div>
   );
 }

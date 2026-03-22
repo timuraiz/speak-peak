@@ -85,15 +85,26 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
       partner: { name: partnerName, avatar: partnerAvatar },
       partnerOnline,
     }}>
-      <div className="flex h-screen w-screen overflow-hidden p-4 gap-4">
+      <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden md:p-4 md:gap-4">
         {!partnerOnline && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-dark text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg">
             <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
             {partnerName} disconnected. Waiting for reconnect...
           </div>
         )}
-        <aside className="w-[311px] shrink-0 px-5 py-8 flex flex-col h-full justify-between items-start">
-          <div className="w-full flex flex-col gap-7 items-start">
+
+        {/* Main content */}
+        <main className="flex-1 gap-8 flex flex-col min-w-0 overflow-auto bg-white md:border md:border-border md:rounded-3xl p-5 md:p-8 order-1 md:order-2">
+          {activeCard && isLeader && (
+            <LeaveActivityButton onClick={() => setActiveCard(null)} />
+          )}
+          {children}
+        </main>
+
+        {/* Sidebar — desktop: left column, mobile: bottom panel */}
+        <aside className="order-2 md:order-1 md:w-[311px] md:shrink-0 md:px-5 md:py-8 md:h-full md:justify-between md:items-start md:border-t-0 flex flex-row md:flex-col items-center justify-between px-4 py-3 border-t border-border bg-white">
+          {/* Activity cards — hidden on mobile */}
+          <div className="hidden md:flex w-full flex-col gap-7 items-start">
             {isLeader ? (
               <h1 className="text-2xl font-semibold text-[#494949]">Choose an activity</h1>
             ) : (
@@ -126,23 +137,19 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
               />
             </div>
           </div>
-          <div className="flex flex-col gap-7 w-full items-center">
-            <div className="flex flex-col gap-2 w-full">
+
+          {/* Members + buttons — always visible */}
+          <div className="flex md:flex-col items-center gap-3 md:gap-7 w-full md:w-auto">
+            <div className="flex md:flex-col gap-2 w-full">
               <Member isCurrentUser={true} />
               <Member isCurrentUser={false} />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0">
               <CallButton />
               <CallButton variant="cancel" />
             </div>
           </div>
         </aside>
-        <main className="flex-1 gap-8 flex flex-col min-w-0 overflow-auto bg-white border border-border rounded-3xl p-8">
-          {activeCard && isLeader && (
-            <LeaveActivityButton onClick={() => setActiveCard(null)} />
-          )}
-          {children}
-        </main>
       </div>
     </CallContext.Provider>
   );

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import CircularProgress from './CircularProgress';
+import { useEffect, useState, useRef } from "react";
+import CircularProgress from "./CircularProgress";
 
 export default function DailyGoal() {
   const [progress, setProgress] = useState(0);
@@ -51,22 +51,25 @@ export default function DailyGoal() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSave();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsEditing(false);
     }
   };
 
   return (
     <div className="border border-border p-8 rounded-[20px] md:rounded-[24px] lg:rounded-[28px] relative">
-
       <button
         onClick={handleEditClick}
-        className='bg-background absolute top-4 right-4 p-2.5 rounded-xl z-1 hover:opacity-80 transition-opacity cursor-pointer'
+        className="bg-background absolute top-4 right-4 p-2.5 rounded-xl z-1 hover:opacity-80 transition-opacity cursor-pointer"
         aria-label="Edit daily goal"
       >
-        <img src="/iconsax-edit-2.svg" alt="Edit daily goal" className="w-3 h-3" />
+        <img
+          src="/iconsax-edit-2.svg"
+          alt="Edit daily goal"
+          className="w-3 h-3"
+        />
       </button>
       <h2 className="text-[28px] md:text-[30px] lg:text-[32px] font-semibold text-dark">
         10 min
@@ -75,11 +78,7 @@ export default function DailyGoal() {
         Today's total speaking time
       </p>
 
-      <img
-        src="/dashed.svg"
-        alt="separator"
-        className="my-7"
-      />
+      <div className="my-7 border-t border-dashed border-border" />
 
       <div className="flex items-center gap-3">
         <CircularProgress
@@ -89,7 +88,7 @@ export default function DailyGoal() {
         />
         <div className="flex flex-col gap-1">
           <p className="text-sm font-normal text-dark">
-            10 out{' '}
+            10 out{" "}
             {isEditing ? (
               <input
                 ref={inputRef}
@@ -103,7 +102,7 @@ export default function DailyGoal() {
               />
             ) : (
               dailyGoal
-            )}{' '}
+            )}{" "}
             min
           </p>
           <p className="text-sm font-normal text-dark-50">
@@ -114,4 +113,3 @@ export default function DailyGoal() {
     </div>
   );
 }
-

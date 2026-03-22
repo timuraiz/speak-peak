@@ -8,12 +8,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'userId and name are required' }, { status: 400 });
   }
 
-  const result = await joinQueue(userId, name, avatar ?? null);
+  try {
+    const result = await joinQueue(userId, name, avatar ?? null);
 
-  if (result.matched && result.roomId) {
-    const partner = await getPartner(result.roomId, userId);
-    return NextResponse.json({ ...result, partner });
+    if (result.matched && result.roomId) {
+      const partner = await getPartner(result.roomId, userId);
+      return NextResponse.json({ ...result, partner });
+    }
+
+    return NextResponse.json(result);
+  } catch (e) {
+    console.error('[queue/join] error:', e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
-
-  return NextResponse.json(result);
 }

@@ -4,7 +4,7 @@ import Button from "@/app/components/Button";
 
 export default function TopicContent() {
     return (
-        <div className="flex flex-col relative px-32">
+        <div className="flex flex-col relative px-4 md:px-32">
             <div className="bg-background rounded-3xl h-[450px] flex flex-col items-center justify-center gap-8 relative ">
                 <div className="flex flex-col items-center justify-center gap-3">
                     <div className="text-xs font-bold text-dark-50 uppercase tracking-wide">Topic for discussion</div>

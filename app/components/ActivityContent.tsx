@@ -5,9 +5,10 @@ import { useCallContext } from '@/app/(call)/layout';
 import GuessTheObject from './GuessTheObject';
 import HelpWords from './HelpWords';
 import TopicContent from './TopicContent';
+import ActivityCard from './ActivityCard';
 
 export default function ActivityContent() {
-    const { activeCard, isLeader } = useCallContext();
+    const { activeCard, setActiveCard, isLeader } = useCallContext();
     const [timerEnded, setTimerEnded] = useState(false);
 
     if (activeCard === 'object') {
@@ -34,7 +35,29 @@ export default function ActivityContent() {
                 <img src="/Call/iconsax-mouse-square.svg" alt="" className="w-7 h-7" />
                 <div className='flex flex-col gap-3'>
                     <h2 className='text-dark text-xl font-semibold text-center'>Choose an activity</h2>
-                    <p className='text-dark-50 text-sm font-normal text-center'>Choose one of the options<br />on the left to begin.</p>
+                    <p className='text-dark-50 text-sm font-normal text-center hidden md:block'>Choose one of the options<br />on the left to begin.</p>
+                </div>
+                <div className='flex flex-col gap-2 w-full md:hidden'>
+                    <ActivityCard
+                        icon="/Call/iconsax-gallery.svg"
+                        title="Guess the object"
+                        description="Explain the picture. Your partner tries to guess the object"
+                        alt="gallery icon"
+                        isPressed={activeCard === 'object'}
+                        object={true}
+                        onClick={() => setActiveCard(activeCard === 'object' ? null : 'object')}
+                        disabled={true}
+                        badge="soon"
+                    />
+                    <ActivityCard
+                        icon="/Call/iconsax-message-notif.svg"
+                        title="Suggest a topic"
+                        description="Get a topic for discussion"
+                        alt="message notification icon"
+                        isPressed={activeCard === 'topic'}
+                        topic={true}
+                        onClick={() => setActiveCard(activeCard === 'topic' ? null : 'topic')}
+                    />
                 </div>
             </div>
         );
