@@ -7,11 +7,21 @@ export default function SnackBar() {
     const { user, profile } = useAuth();
     const [visible, setVisible] = useState(() => {
         if (typeof window === 'undefined') return false;
+        if (new URLSearchParams(window.location.search).get('welcome') === '1') return true;
         const show = sessionStorage.getItem('showWelcome') === '1';
         if (show) sessionStorage.removeItem('showWelcome');
         return show;
     });
     const displayName = profile?.name ?? user?.email?.split('@')[0] ?? 'there';
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('welcome') === '1') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('welcome');
+            history.replaceState(null, '', url.toString());
+        }
+    }, []);
 
     useEffect(() => {
         if (!visible) return;

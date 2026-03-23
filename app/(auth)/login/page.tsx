@@ -145,8 +145,8 @@ export default function LoginPage() {
           </h1>
         </div>
         <div className="flex flex-col gap-2">
-          <Social icon="/Google.svg" text="Continue with Google" onClick={() => {}} />
-          <Social icon="/Apple.svg" text="Continue with Apple" onClick={() => {}} />
+          <Social icon="/Google.svg" text="Continue with Google" onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/auth/callback` } })} />
+          <Social icon="/Apple.svg" text="Continue with Apple" onClick={() => supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: `${window.location.origin}/auth/callback` } })} />
         </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 border-t border-border rounded-full" />

@@ -10,7 +10,7 @@ export default function Social({
     onClick
 }: SocialProps) {
     return (
-        <div className="flex items-center gap-2 bg-white rounded-2xl px-11.25 py-4.5 border border-border w-full justify-center">
+        <div className="flex items-center gap-2 bg-white rounded-2xl px-11.25 py-4.5 border border-border w-full justify-center cursor-pointer" onClick={onClick}>
             <img src={icon} alt={text} className="w-4 h-4" />
             <p className="text-sm font-medium text-dark">{text}</p>
         </div>
