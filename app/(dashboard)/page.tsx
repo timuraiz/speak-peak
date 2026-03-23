@@ -53,7 +53,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex gap-4 pb-1">
-            <Button onClick={handleStartCall} size="small">Start a call</Button>
+            <Button onClick={handleStartCall} className="shrink-0">Start a call</Button>
             <Queue />
           </div>
         </div>

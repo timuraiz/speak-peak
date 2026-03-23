@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState('');
   const [otpError, setOtpError] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
+  const [exiting, setExiting] = useState(false);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const supabase = createClient();
@@ -76,25 +77,26 @@ export default function LoginPage() {
     const { data: profile } = await supabase
       .from('profiles').select('onboarding_completed').eq('id', user!.id).single();
 
+    setExiting(true);
     if (profile?.onboarding_completed) {
       sessionStorage.setItem('showWelcome', '1');
-      router.push('/');
+      setTimeout(() => router.push('/'), 350);
     } else {
-      router.push('/onboarding');
+      setTimeout(() => router.push('/onboarding'), 350);
     }
   };
 
   if (showOtp) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white rounded-3xl border border-border">
-        <div className="w-full max-w-md flex flex-col gap-8 pt-32 pb-8">
+      <div className={`h-screen flex items-center justify-center bg-white rounded-3xl border border-border transition-opacity duration-300 ${exiting ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="w-full max-w-md flex flex-col gap-8 px-6 py-8 sm:pt-32 sm:pb-8 sm:px-0">
           <div className="text-center">
             <h1 className="text-2xl font-semibold text-dark text-center">
               Check your email.<br /><span className="text-dark-50">We&apos;ve sent a 6-digit code</span>
             </h1>
           </div>
           <div>
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-2 sm:gap-3 justify-center">
               {otp.map((digit, index) => (
                 <InputField
                   key={index}
@@ -106,7 +108,7 @@ export default function LoginPage() {
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
                   onPaste={index === 0 ? handleOtpPaste : undefined}
-                  className={`w-14 h-14 p-0 text-center text-2xl font-semibold rounded-2xl border transition-all ${otpError ? 'border-red' : 'border-border focus:border-accent'} ${digit ? 'text-dark' : 'text-dark-50'}`}
+                  className={`w-10 h-10 sm:w-14 sm:h-14 p-0 text-center text-xl sm:text-2xl font-semibold rounded-xl sm:rounded-2xl border transition-all ${otpError ? 'border-red' : 'border-border focus:border-accent'} ${digit ? 'text-dark' : 'text-dark-50'}`}
                 />
               ))}
             </div>
@@ -137,7 +139,7 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen flex items-center justify-center bg-white rounded-3xl border border-border">
-      <div className="w-full max-w-md flex flex-col gap-8 pt-32 pb-8">
+      <div className="w-full max-w-md flex flex-col gap-8 px-6 py-8 sm:pt-32 sm:pb-8 sm:px-0">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-semibold text-dark mb-2 text-center">
             Welcome back 👋<br />

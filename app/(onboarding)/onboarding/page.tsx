@@ -32,6 +32,7 @@ const steps = [
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
+  const [animPhase, setAnimPhase] = useState<'idle' | 'out' | 'in'>('idle');
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
@@ -64,12 +65,21 @@ export default function OnboardingPage() {
     router.push('/');
   };
 
+  const goToStep = (newStep: number) => {
+    setAnimPhase('out');
+    setTimeout(() => {
+      setStep(newStep);
+      setAnimPhase('in');
+      setTimeout(() => setAnimPhase('idle'), 300);
+    }, 200);
+  };
+
   const handleNext = () => {
     if (step === 1) {
       if (!name.trim()) { setNameError('Please enter your name'); return; }
-      setStep(2);
+      goToStep(2);
     } else if (step === 2) {
-      setStep(3);
+      goToStep(3);
     } else if (step === 3) {
       handleComplete();
     }
@@ -83,13 +93,13 @@ export default function OnboardingPage() {
       <div className="w-full max-w-md flex flex-col gap-8">
 
         {/* Heading */}
-        <div className="text-center">
+        <div className={`text-center ${animPhase === 'out' ? 'step-exit' : animPhase === 'in' ? 'step-enter' : ''}`}>
           <h1 className="text-2xl font-semibold text-dark">{current.title}</h1>
           <p className="text-2xl font-semibold text-dark-50">{current.subtitle}</p>
         </div>
 
         {/* Content */}
-        <div>
+        <div className={animPhase === 'out' ? 'step-exit' : animPhase === 'in' ? 'step-enter' : ''}>
           {step === 1 && (
             <InputField
               placeholder="Name"
