@@ -38,7 +38,7 @@ export default function TimeSpentCard({
       <p className="text-sm font-normal text-dark-50">
         Total time spent on calls
       </p>
-      <div className="grid grid-cols-9 grid-rows-4 mt-5" style={{ columnGap: '0px', rowGap: '4px' }}>
+      <div className="grid grid-cols-9 grid-rows-4 mt-5 gap-2">
         {dailyData.map((timeSpent, i) => (
           <div
             key={i}
