@@ -66,6 +66,11 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
     userName: currentUserName,
   });
 
+  useEffect(() => {
+    sessionStorage.setItem("callStartTime", Date.now().toString());
+    return () => sessionStorage.removeItem("callStartTime");
+  }, []);
+
   // Leader: sync activity to server on change
   const setActiveCard = (card: string | null) => {
     setActiveCardState(card);

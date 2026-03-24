@@ -11,6 +11,7 @@ interface UserProfile {
   language?: string;
   level?: string;
   onboarding_completed?: boolean;
+  daily_goal_minutes?: number;
 }
 
 interface AuthContextType {

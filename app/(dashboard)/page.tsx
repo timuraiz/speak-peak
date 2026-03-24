@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { createClient } from "@/app/lib/supabase/client";
 import Loader from "@/app/components/Loader";
 import Fire from "@/app/components/Fire";
 import Button from "@/app/components/Button";
@@ -11,10 +13,50 @@ import TimeSpentCard from "../components/TimeSpentCard";
 import DailyGoal from "../components/DailyGoal";
 import SnackBar from "../components/SnackBar";
 
+function useStreak(userId: string | undefined) {
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = createClient();
+    supabase
+      .from('call_sessions')
+      .select('created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (!data || data.length === 0) { setStreak(0); return; }
+
+        const days = new Set(
+          data.map(s => new Date(s.created_at).toDateString())
+        );
+
+        let count = 0;
+        const today = new Date();
+        for (let i = 0; i < 365; i++) {
+          const d = new Date(today);
+          d.setDate(today.getDate() - i);
+          if (days.has(d.toDateString())) {
+            count++;
+          } else if (i === 0) {
+            // today has no call yet — check yesterday before breaking
+            continue;
+          } else {
+            break;
+          }
+        }
+        setStreak(count);
+      });
+  }, [userId]);
+
+  return streak;
+}
+
 export default function Home() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
   const displayName = profile?.name ?? user?.email?.split("@")[0] ?? "there";
+  const streak = useStreak(user?.id);
 
   if (loading)
     return (
@@ -33,7 +75,7 @@ export default function Home() {
         <h1 className="text-xl md:text-2xl font-semibold">
           Welcome back, {displayName} 👋
         </h1>
-        <Fire streak={3} />
+        <Fire streak={streak} />
       </div>
 
       <div className="flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-3 md:gap-4 mt-5 md:mt-7 md:h-[495px]">
