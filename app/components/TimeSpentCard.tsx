@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { createClient } from "@/app/lib/supabase/client";
 
-function getHeatMapColor(timeSpent: number, dailyGoal: number): string {
-  if (dailyGoal === 0) return "bg-dark-8";
-  const percentage = (timeSpent / dailyGoal) * 100;
+function getHeatMapColor(timeSpent: number, dailyGoalSeconds: number): string {
+  if (timeSpent === 0) return "bg-dark-8";
+  if (dailyGoalSeconds === 0) return "bg-accent-25";
+  const percentage = (timeSpent / dailyGoalSeconds) * 100;
   if (percentage >= 100) return "bg-accent";
   if (percentage >= 70) return "bg-accent-70";
   if (percentage >= 50) return "bg-accent-50";
   if (percentage >= 25) return "bg-accent-25";
-  return "bg-dark-8";
+  return "bg-accent-12";
 }
 
 function formatTotal(seconds: number): string {
@@ -26,7 +27,7 @@ export default function TimeSpentCard() {
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [dailyData, setDailyData] = useState<number[]>(Array(36).fill(0));
   const supabase = createClient();
-  const dailyGoal = profile?.daily_goal_minutes ?? 60;
+  const dailyGoalSeconds = (profile?.daily_goal_minutes ?? 60) * 60;
 
   useEffect(() => {
     if (!user) return;
@@ -57,7 +58,7 @@ export default function TimeSpentCard() {
           const d = new Date();
           d.setDate(d.getDate() - (35 - i));
           const key = d.toDateString();
-          grid[i] = Math.floor((byDay[key] ?? 0) / 60);
+          grid[i] = byDay[key] ?? 0;
         }
         setDailyData(grid);
       });
@@ -73,7 +74,7 @@ export default function TimeSpentCard() {
         {dailyData.map((timeSpent, i) => (
           <div
             key={i}
-            className={`w-full max-w-5 aspect-square rounded-full mx-auto ${getHeatMapColor(timeSpent, dailyGoal)}`}
+            className={`w-full max-w-5 aspect-square rounded-full mx-auto ${getHeatMapColor(timeSpent, dailyGoalSeconds)}`}
           />
         ))}
       </div>
