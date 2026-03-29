@@ -24,8 +24,8 @@ export default function Member({ isCurrentUser = false }: MemberProps) {
                 </div>
             </div>
             <div className="flex items-center gap-1.5">
-                {isCurrentUser ? isMuted && <img src="/Call/muted2.svg" alt="muted" className="w-4 h-4" /> : partnerMuted && <img src="/Call/muted2.svg" alt="muted" className="w-4 h-4" />}
-                {isCurrentUser === isLeader && <img src="/Call/crown.svg" alt="Manager" className="w-4 h-4 md:w-5 md:h-5" />}
+                {isCurrentUser ? isMuted && <img src="/Call/muted2.svg" alt="muted" className="w-5 h-5" /> : partnerMuted && <img src="/Call/muted2.svg" alt="muted" className="w-5 h-5" />}
+                {isCurrentUser === isLeader && <img src="/Call/crown.svg" alt="Manager" className="w-5 h-5" />}
             </div>
         </div>
     );
