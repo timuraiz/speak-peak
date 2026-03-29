@@ -16,7 +16,6 @@ function randomFaces(count: number): string[] {
 
 export default function Queue() {
   const [count, setCount] = useState<number | null>(null);
-  const [online, setOnline] = useState<number | null>(null);
   const [avatars, setAvatars] = useState<string[]>(() => randomFaces(3));
   const fallbacksRef = useRef<string[]>(randomFaces(3));
 
@@ -26,7 +25,6 @@ export default function Queue() {
         const res = await fetch('/api/queue/stats');
         const data = await res.json();
         setCount(data.count);
-        setOnline(data.online);
         const resolved = (data.avatars as (string | null)[]).map(
           (a, i) => a ?? fallbacksRef.current[i] ?? `/faces/${i + 1}.png`
         );
@@ -59,10 +57,7 @@ export default function Queue() {
         />
       ))}
       <span className="text-xs text-dark-50">
-        <span className="text-xs text-dark">{online ?? '—'}</span> online
-        {count !== null && count > 0 && (
-          <>, <span className="text-dark">{count}</span> in queue</>
-        )}
+        <span className="text-xs text-dark">{count ?? '—'}</span> people in queue
       </span>
     </div>
   );
