@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  useCallback,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useAudioCall } from "@/app/hooks/useAudioCall";
@@ -13,7 +19,9 @@ import { Suspense } from "react";
 export interface Topic {
   id: number;
   title: string;
-  meta: { help_words: { word: string; pronunciation: string; tags: string[] }[] };
+  meta: {
+    help_words: { word: string; pronunciation: string; tags: string[] }[];
+  };
 }
 
 interface CallContextType {
@@ -79,29 +87,36 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const { partnerOnline, isMuted, partnerMuted, toggleMute, sendMessage } = useAudioCall({
-    roomId,
-    userId,
-    userName: currentUserName,
-    onMessage: handleMessage,
-  });
+  const { partnerOnline, isMuted, partnerMuted, toggleMute, sendMessage } =
+    useAudioCall({
+      roomId,
+      userId,
+      userName: currentUserName,
+      onMessage: handleMessage,
+    });
 
-  const setCurrentTopic = useCallback((topic: Topic) => {
-    setCurrentTopicState(topic);
-    sendMessage({ type: "topic", value: topic });
-  }, [sendMessage]);
+  const setCurrentTopic = useCallback(
+    (topic: Topic) => {
+      setCurrentTopicState(topic);
+      sendMessage({ type: "topic", value: topic });
+    },
+    [sendMessage]
+  );
 
   useEffect(() => {
     sessionStorage.setItem("callStartTime", Date.now().toString());
     return () => sessionStorage.removeItem("callStartTime");
   }, []);
 
-  const setActiveCard = useCallback((card: string | null) => {
-    setActiveCardState(card);
-    if (isLeader) {
-      sendMessage({ type: "activity", value: card });
-    }
-  }, [isLeader, sendMessage]);
+  const setActiveCard = useCallback(
+    (card: string | null) => {
+      setActiveCardState(card);
+      if (isLeader) {
+        sendMessage({ type: "activity", value: card });
+      }
+    },
+    [isLeader, sendMessage]
+  );
 
   return (
     <CallContext.Provider
@@ -148,7 +163,6 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
                 <h1 className="text-2xl font-semibold text-[#494949]">
                   Choose one of the options
                 </h1>
-                <p className="text-sm text-dark-50">on the left to begin.</p>
               </div>
             )}
             <div className="flex flex-col gap-2 w-full">
