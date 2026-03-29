@@ -52,11 +52,36 @@ function useStreak(userId: string | undefined) {
   return streak;
 }
 
+function useOnlineCount(userId: string | undefined) {
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    const ping = async () => {
+      try {
+        const res = await fetch('/api/presence/ping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+        });
+        const data = await res.json();
+        setCount(data.count);
+      } catch {}
+    };
+    ping();
+    const interval = setInterval(ping, 20_000);
+    return () => clearInterval(interval);
+  }, [userId]);
+
+  return count;
+}
+
 export default function Home() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
   const displayName = profile?.name ?? user?.email?.split("@")[0] ?? "there";
   const streak = useStreak(user?.id);
+  const onlineCount = useOnlineCount(user?.id);
 
   if (loading)
     return (
@@ -80,7 +105,7 @@ export default function Home() {
 
       <div className="flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-3 md:gap-4 mt-5 md:mt-7 md:h-[495px]">
         <div className="border border-border relative flex flex-col gap-6 md:gap-12 bg-background p-8 md:p-9 rounded-[20px] md:rounded-3xl lg:rounded-4xl col-span-2">
-          <OnlineBadge count={231} className="absolute top-7 right-7" />
+          {onlineCount !== null && <OnlineBadge count={onlineCount} className="absolute top-7 right-7" />}
           <div className="flex flex-col gap-4.5">
             <span className="text-xs font-bold text-dark-50">
               REAL PRACTICE
