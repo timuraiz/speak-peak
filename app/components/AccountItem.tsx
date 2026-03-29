@@ -18,7 +18,7 @@ export default function AccountItem() {
     <div className="flex justify-between items-center">
       <div className="flex gap-2 items-center">
         <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0">
-          <Image src={profile?.avatar ?? "/avatar.png"} alt="User" fill />
+          <Image src={profile?.avatar ?? "/1.png"} alt="User" fill />
         </div>
         <span className="text-14 font-light text-dark">{displayName}</span>
       </div>
