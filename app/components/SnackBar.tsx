@@ -44,9 +44,9 @@ export default function SnackBar() {
     if (!mounted) return null;
 
     return (
-        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-background rounded-2xl px-4 py-3 border border-border w-fit shadow-sm transition-all duration-400 ease-in-out ${show ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3'}`}>
+        <div className={`fixed top-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 flex items-center gap-2 bg-background rounded-2xl px-4 py-3 border border-border w-auto sm:w-fit shadow-sm transition-all duration-400 ease-in-out ${show ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3'}`}>
             <img src="/snack.svg" alt="Snackbar" className="w-5 h-5" />
-            <p className="text-xs font-medium text-dark whitespace-nowrap">Welcome to SpeakPeak, {displayName}. You can start speaking</p>
+            <p className="text-xs font-medium text-dark ">Welcome to SpeakPeak, {displayName}. You can start speaking</p>
         </div>
     );
 }
