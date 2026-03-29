@@ -6,6 +6,7 @@ const redis = new Redis({
 });
 
 const QUEUE_KEY = 'speak:queue';
+const ONLINE_KEY = 'speak:online';
 const TTL = 7200; // 2 hours
 
 interface QueueEntry {
@@ -63,13 +64,18 @@ export async function joinQueue(
       redis.set(`speak:room:${roomId}`, JSON.stringify(room), { ex: TTL }),
       redis.set(`speak:userToRoom:${match.userId}`, roomId, { ex: TTL }),
       redis.set(`speak:userToRoom:${userId}`, roomId, { ex: TTL }),
+      redis.sadd(ONLINE_KEY, userId),
+      redis.sadd(ONLINE_KEY, match.userId),
     ]);
 
     return { matched: true, roomId, isLeader: false };
   }
 
   // No match — add to queue
-  await redis.lpush(QUEUE_KEY, JSON.stringify({ userId, name, avatar, joinedAt: Date.now() }));
+  await Promise.all([
+    redis.lpush(QUEUE_KEY, JSON.stringify({ userId, name, avatar, joinedAt: Date.now() })),
+    redis.sadd(ONLINE_KEY, userId),
+  ]);
   return { matched: false };
 }
 
@@ -100,7 +106,6 @@ export async function getPartner(
 }
 
 export async function leaveQueue(userId: string): Promise<void> {
-  // Remove all entries for this userId from the queue
   const items = await redis.lrange<string>(QUEUE_KEY, 0, -1);
   for (const item of items) {
     const entry: QueueEntry = typeof item === 'string' ? JSON.parse(item) : item;
@@ -108,6 +113,7 @@ export async function leaveQueue(userId: string): Promise<void> {
       await redis.lrem(QUEUE_KEY, 1, item);
     }
   }
+  await redis.srem(ONLINE_KEY, userId);
 }
 
 export async function leaveRoom(userId: string): Promise<void> {
@@ -122,19 +128,27 @@ export async function leaveRoom(userId: string): Promise<void> {
       redis.del(`speak:userToRoom:${room.user2Id}`),
       redis.del(`speak:room:${roomId}`),
       redis.del(`speak:roomActivity:${roomId}`),
+      redis.srem(ONLINE_KEY, room.user1Id),
+      redis.srem(ONLINE_KEY, room.user2Id),
     ]);
   } else {
-    await redis.del(`speak:userToRoom:${userId}`);
+    await Promise.all([
+      redis.del(`speak:userToRoom:${userId}`),
+      redis.srem(ONLINE_KEY, userId),
+    ]);
   }
 }
 
-export async function getQueueStats(): Promise<{ count: number; avatars: (string | null)[] }> {
-  const items = await redis.lrange<string>(QUEUE_KEY, 0, -1);
+export async function getQueueStats(): Promise<{ count: number; online: number; avatars: (string | null)[] }> {
+  const [items, online] = await Promise.all([
+    redis.lrange<string>(QUEUE_KEY, 0, -1),
+    redis.scard(ONLINE_KEY),
+  ]);
   const entries: QueueEntry[] = items.map((item) =>
     typeof item === 'string' ? JSON.parse(item) : item
   );
   const avatars = entries.slice(0, 3).map((e) => e.avatar);
-  return { count: entries.length, avatars };
+  return { count: entries.length, online, avatars };
 }
 
 export async function setRoomActivity(roomId: string, activity: string | null): Promise<void> {
