@@ -39,16 +39,8 @@ export default function DailyGoal() {
 
   useEffect(() => {
     const timeSpentMinutes = timeSpentSeconds / 60;
-    const targetProgress = dailyGoal > 0 ? timeSpentMinutes / dailyGoal : 0;
-    const duration = 1500;
-    const startTime = Date.now();
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      setProgress(t * targetProgress);
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
+    const targetProgress = dailyGoal > 0 ? Math.min(timeSpentMinutes / dailyGoal, 1) : 0;
+    setProgress(targetProgress);
   }, [dailyGoal, timeSpentSeconds]);
 
   const openEdit = () => {
