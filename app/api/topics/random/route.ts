@@ -9,14 +9,12 @@ const supabase = createClient(
 export async function GET() {
   const { data, error } = await supabase
     .from('topics')
-    .select('id, title, meta')
-    .order('random()' as never)
-    .limit(1)
-    .single();
+    .select('id, title, meta');
 
-  if (error || !data) {
-    return NextResponse.json({ error: 'Failed to fetch topic' }, { status: 500 });
+  if (error || !data || data.length === 0) {
+    return NextResponse.json({ error: 'Failed to fetch topics' }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  const topic = data[Math.floor(Math.random() * data.length)];
+  return NextResponse.json(topic);
 }

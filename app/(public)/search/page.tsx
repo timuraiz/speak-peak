@@ -73,7 +73,7 @@ export default function SearchPage() {
           const res = await fetch(`/api/queue/status?userId=${userId}`);
           const status = await res.json();
           if (status.matched) {
-            redirect(status.roomId, status.isLeader ?? true, status.partner);
+            redirect(status.roomId, status.isLeader ?? false, status.partner);
           }
         }, 1500);
       });
