@@ -128,6 +128,15 @@ export async function leaveRoom(userId: string): Promise<void> {
   }
 }
 
+export async function getQueueStats(): Promise<{ count: number; avatars: (string | null)[] }> {
+  const items = await redis.lrange<string>(QUEUE_KEY, 0, -1);
+  const entries: QueueEntry[] = items.map((item) =>
+    typeof item === 'string' ? JSON.parse(item) : item
+  );
+  const avatars = entries.slice(0, 3).map((e) => e.avatar);
+  return { count: entries.length, avatars };
+}
+
 export async function setRoomActivity(roomId: string, activity: string | null): Promise<void> {
   if (activity === null) {
     await redis.del(`speak:roomActivity:${roomId}`);
