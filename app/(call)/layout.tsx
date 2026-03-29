@@ -10,6 +10,12 @@ import CallButton from "@/app/components/CallButton";
 import LeaveActivityButton from "@/app/components/LeaveActivityButton";
 import { Suspense } from "react";
 
+export interface Topic {
+  id: number;
+  title: string;
+  meta: { help_words: { word: string; pronunciation: string; tags: string[] }[] };
+}
+
 interface CallContextType {
   activeCard: string | null;
   setActiveCard: (card: string | null) => void;
@@ -21,6 +27,8 @@ interface CallContextType {
   currentUser: { name: string; avatar: string | null };
   partner: { name: string; avatar: string | null };
   partnerOnline: boolean;
+  currentTopic: Topic | null;
+  setCurrentTopic: (topic: Topic) => void;
 }
 
 const CallContext = createContext<CallContextType | undefined>(undefined);
@@ -60,9 +68,14 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
       ? sessionStorage.getItem("userId") || null
       : null;
 
+  const [currentTopic, setCurrentTopicState] = useState<Topic | null>(null);
+
   const handleMessage = useCallback((msg: Record<string, unknown>) => {
     if (msg.type === "activity") {
       setActiveCardState((msg.value as string | null) ?? null);
+    }
+    if (msg.type === "topic") {
+      setCurrentTopicState(msg.value as Topic);
     }
   }, []);
 
@@ -72,6 +85,11 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
     userName: currentUserName,
     onMessage: handleMessage,
   });
+
+  const setCurrentTopic = useCallback((topic: Topic) => {
+    setCurrentTopicState(topic);
+    sendMessage({ type: "topic", value: topic });
+  }, [sendMessage]);
 
   useEffect(() => {
     sessionStorage.setItem("callStartTime", Date.now().toString());
@@ -98,6 +116,8 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
         currentUser: { name: currentUserName, avatar: currentUserAvatar },
         partner: { name: partnerName, avatar: partnerAvatar },
         partnerOnline,
+        currentTopic,
+        setCurrentTopic,
       }}
     >
       <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden md:p-4 md:gap-4">
