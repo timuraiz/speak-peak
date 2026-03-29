@@ -6,7 +6,7 @@ interface MemberProps {
 }
 
 export default function Member({ isCurrentUser = false }: MemberProps) {
-    const { isLeader, isMuted, currentUser, partner } = useCallContext();
+    const { isLeader, isMuted, partnerMuted, currentUser, partner } = useCallContext();
     const person = isCurrentUser ? currentUser : partner;
     return (
         <div className="flex justify-between items-center w-full bg-white rounded-2xl p-3 md:p-4 md:pr-5">
@@ -24,7 +24,7 @@ export default function Member({ isCurrentUser = false }: MemberProps) {
                 </div>
             </div>
             <div className="flex items-center gap-1.5">
-                {isCurrentUser && isMuted && <img src="/Call/muted2.svg" alt="muted" className="w-4 h-4" />}
+                {isCurrentUser ? isMuted && <img src="/Call/muted2.svg" alt="muted" className="w-4 h-4" /> : partnerMuted && <img src="/Call/muted2.svg" alt="muted" className="w-4 h-4" />}
                 {isCurrentUser === isLeader && <img src="/Call/crown.svg" alt="Manager" className="w-4 h-4 md:w-5 md:h-5" />}
             </div>
         </div>

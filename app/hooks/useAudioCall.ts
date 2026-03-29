@@ -5,8 +5,6 @@ import { Room, RoomEvent, Track, RemoteTrack, RemoteTrackPublication, RemotePart
 
 setLogLevel(LogLevel.warn);
 
-// Suppress LiveKit's benign race-condition warning about tracks arriving
-// before participant metadata — audio still works correctly
 if (typeof window !== 'undefined') {
   const _origError = console.error.bind(console);
   console.error = (...args: unknown[]) => {
@@ -22,12 +20,17 @@ interface UseAudioCallOptions {
   roomId: string | null;
   userId: string | null;
   userName: string;
+  onMessage?: (msg: Record<string, unknown>) => void;
 }
 
-export function useAudioCall({ roomId, userId, userName }: UseAudioCallOptions) {
+export function useAudioCall({ roomId, userId, userName, onMessage }: UseAudioCallOptions) {
   const roomRef = useRef<Room | null>(null);
+  const onMessageRef = useRef(onMessage);
+  onMessageRef.current = onMessage;
+
   const [partnerOnline, setPartnerOnline] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [partnerMuted, setPartnerMuted] = useState(false);
 
   const attachTrack = (track: RemoteTrack) => {
     if (track.kind !== Track.Kind.Audio) return;
@@ -40,19 +43,27 @@ export function useAudioCall({ roomId, userId, userName }: UseAudioCallOptions) 
     track.detach().forEach((el) => el.remove());
   };
 
+  const sendMessage = useCallback((msg: Record<string, unknown>) => {
+    const room = roomRef.current;
+    if (!room) return;
+    room.localParticipant.publishData(
+      new TextEncoder().encode(JSON.stringify(msg)),
+      { reliable: true }
+    );
+  }, []);
+
   const toggleMute = useCallback(async () => {
     const room = roomRef.current;
-    if (!room) { console.warn('[mute] room not connected'); return; }
+    if (!room) return;
     const next = !isMuted;
-    console.log('[mute] setting mic enabled:', !next);
     try {
       await room.localParticipant.setMicrophoneEnabled(!next);
-      console.log('[mute] done, isMuted now:', next);
       setIsMuted(next);
+      sendMessage({ type: 'mute', value: next });
     } catch (e) {
       console.error('[mute] error:', e);
     }
-  }, [isMuted]);
+  }, [isMuted, sendMessage]);
 
   const connect = useCallback(async () => {
     if (!roomId || !userId) return;
@@ -83,6 +94,29 @@ export function useAudioCall({ roomId, userId, userName }: UseAudioCallOptions) 
 
     room.on(RoomEvent.ParticipantDisconnected, () => {
       setPartnerOnline(false);
+      setPartnerMuted(false);
+    });
+
+    room.on(RoomEvent.TrackMuted, (pub, participant) => {
+      if (participant !== room.localParticipant && pub.kind === Track.Kind.Audio) {
+        setPartnerMuted(true);
+      }
+    });
+
+    room.on(RoomEvent.TrackUnmuted, (pub, participant) => {
+      if (participant !== room.localParticipant && pub.kind === Track.Kind.Audio) {
+        setPartnerMuted(false);
+      }
+    });
+
+    room.on(RoomEvent.DataReceived, (data: Uint8Array) => {
+      try {
+        const msg = JSON.parse(new TextDecoder().decode(data));
+        if (msg.type === 'mute') {
+          setPartnerMuted(msg.value);
+        }
+        onMessageRef.current?.(msg);
+      } catch {}
     });
 
     await room.connect(url, token);
@@ -93,6 +127,7 @@ export function useAudioCall({ roomId, userId, userName }: UseAudioCallOptions) 
       room.remoteParticipants.forEach((participant) => {
         participant.trackPublications.forEach((pub) => {
           if (pub.track) attachTrack(pub.track as RemoteTrack);
+          if (pub.kind === Track.Kind.Audio && pub.isMuted) setPartnerMuted(true);
         });
       });
     }
@@ -103,23 +138,16 @@ export function useAudioCall({ roomId, userId, userName }: UseAudioCallOptions) 
     return () => {
       const room = roomRef.current;
       if (!room) return;
-
-      // Stop local mic track so browser releases the microphone indicator
-      room.localParticipant.trackPublications.forEach((pub) => {
-        pub.track?.stop();
-      });
-
-      // Detach and remove all remote audio elements
+      room.localParticipant.trackPublications.forEach((pub) => pub.track?.stop());
       room.remoteParticipants.forEach((participant) => {
         participant.trackPublications.forEach((pub) => {
           if (pub.track) pub.track.detach().forEach((el) => el.remove());
         });
       });
-
       room.disconnect();
       roomRef.current = null;
     };
   }, [connect]);
 
-  return { partnerOnline, isMuted, toggleMute };
+  return { partnerOnline, isMuted, partnerMuted, toggleMute, sendMessage };
 }

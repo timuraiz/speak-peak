@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useAudioCall } from "@/app/hooks/useAudioCall";
@@ -17,6 +17,7 @@ interface CallContextType {
   setIsLeader: (isLeader: boolean) => void;
   isMuted: boolean;
   toggleMute: () => void;
+  partnerMuted: boolean;
   currentUser: { name: string; avatar: string | null };
   partner: { name: string; avatar: string | null };
   partnerOnline: boolean;
@@ -54,16 +55,22 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
       typeof window !== "undefined" &&
       sessionStorage.getItem("isLeader") === "true"
   );
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const userId =
     typeof window !== "undefined"
       ? sessionStorage.getItem("userId") || null
       : null;
 
-  const { partnerOnline, isMuted, toggleMute } = useAudioCall({
+  const handleMessage = useCallback((msg: Record<string, unknown>) => {
+    if (msg.type === "activity") {
+      setActiveCardState((msg.value as string | null) ?? null);
+    }
+  }, []);
+
+  const { partnerOnline, isMuted, partnerMuted, toggleMute, sendMessage } = useAudioCall({
     roomId,
     userId,
     userName: currentUserName,
+    onMessage: handleMessage,
   });
 
   useEffect(() => {
@@ -71,32 +78,12 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
     return () => sessionStorage.removeItem("callStartTime");
   }, []);
 
-  // Leader: sync activity to server on change
-  const setActiveCard = (card: string | null) => {
+  const setActiveCard = useCallback((card: string | null) => {
     setActiveCardState(card);
-    if (isLeader && roomId) {
-      fetch("/api/room/activity", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomId, activity: card }),
-      });
+    if (isLeader) {
+      sendMessage({ type: "activity", value: card });
     }
-  };
-
-  // Non-leader: poll activity from server
-  useEffect(() => {
-    if (isLeader || !roomId) return;
-
-    pollingRef.current = setInterval(async () => {
-      const res = await fetch(`/api/room/activity?roomId=${roomId}`);
-      const data = await res.json();
-      setActiveCardState(data.activity);
-    }, 1000);
-
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-  }, [isLeader, roomId]);
+  }, [isLeader, sendMessage]);
 
   return (
     <CallContext.Provider
@@ -107,6 +94,7 @@ function CallLayoutInner({ children }: { children: React.ReactNode }) {
         setIsLeader,
         isMuted,
         toggleMute,
+        partnerMuted,
         currentUser: { name: currentUserName, avatar: currentUserAvatar },
         partner: { name: partnerName, avatar: partnerAvatar },
         partnerOnline,
