@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+@keyframes chunk-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chunk-out {
+  from { opacity: 1; transform: translateY(0); color: var(--color-dark); font-size: 1.25rem; }
+  to   { opacity: 0.22; transform: translateY(-6px); color: var(--color-dark-20); font-size: 1rem; }
+}
+
+@theme inline {
+  --animate-chunk-in:  chunk-in  0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-chunk-out: chunk-out 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 :root {
   --background: #FAFAFA;
   --foreground: #171717;

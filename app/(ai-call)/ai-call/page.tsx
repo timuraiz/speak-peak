@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import AiCallOnboarding from "@/app/components/AiCallOnboarding";
 
 const TOPICS = [
@@ -13,35 +14,135 @@ const TOPICS = [
   { id: 5, icon: "/topic-phone.svg", label: "Phone complaint" },
 ];
 
-function useTimer() {
+function useTimer(running: boolean) {
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
+    if (!running) return;
     const interval = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [running]);
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-type AiState = "speaking" | "listening";
-
-export default function AiCallPage() {
+function AiCallContent() {
   const router = useRouter();
-  const timer = useTimer();
   const [selectedTopic, setSelectedTopic] = useState(2);
-  const [aiState, setAiState] = useState<AiState>("speaking");
   const [onboarded, setOnboarded] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
 
-  const isSpeaking = aiState === "speaking";
+  const endingRef = useRef(false);
+
+  const [prevChunk, setPrevChunk] = useState("");
+  const [currentChunk, setCurrentChunk] = useState("");
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const clearTimers = () => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  };
+
+  const conversation = useConversation({
+    onDisconnect: () => {
+      if (endingRef.current) router.push("/");
+    },
+    onMessage: ({ source, message }) => {
+      if (source !== "ai") return;
+      clearTimers();
+      setPrevChunk("");
+      setCurrentChunk("");
+
+      // Split by punctuation then merge until each chunk has ~5-7 words
+      const TARGET_WORDS = 6;
+      const parts = (message.match(/[^,!?.]+[,!?.]?/g) ?? [message])
+        .map((s) => s.trim()).filter(Boolean);
+      const chunks: string[] = [];
+      let current = "";
+      for (const part of parts) {
+        const merged = current ? `${current} ${part}` : part;
+        if (current && merged.split(/\s+/).length > TARGET_WORDS) {
+          chunks.push(current);
+          current = part;
+        } else {
+          current = merged;
+        }
+      }
+      if (current) chunks.push(current);
+
+      let elapsed = 0;
+      chunks.forEach((chunk, i) => {
+        const duration = (chunk.split(/\s+/).length / 2.5) * 1000;
+        timersRef.current.push(
+          setTimeout(() => {
+            setPrevChunk(i === 0 ? "" : chunks[i - 1]);
+            setCurrentChunk(chunk);
+          }, elapsed)
+        );
+        elapsed += duration;
+      });
+    },
+    onModeChange: ({ mode }) => {
+      if (mode === "listening") {
+        // Don't clear timers — let last chunks finish playing out
+        // Text will be replaced when the next message arrives
+      }
+    },
+  });
+  const isActive = conversation.status === "connected";
+  const isSpeaking = conversation.mode === "speaking";
+  const timer = useTimer(isActive);
   const blurClass = !onboarded ? "blur-sm" : "blur-0";
+
+  const getSignedUrl = useCallback(async (): Promise<string> => {
+    const res = await fetch("/api/elevenlabs/signed-url");
+    if (!res.ok) throw new Error("Failed to get signed URL");
+    const data = await res.json();
+    return data.signedUrl;
+  }, []);
+
+  const handleOnboarded = useCallback(async () => {
+    setOnboarded(true);
+    if (conversation.status !== "disconnected") return;
+    try { new AudioContext().resume(); } catch { /* ignore */ }
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const signedUrl = await getSignedUrl();
+      conversation.startSession({
+        signedUrl,
+        overrides: {
+          agent: {
+            firstMessage: `Let's practice: ${TOPICS.find((t) => t.id === selectedTopic)?.label}.`,
+          },
+        },
+      });
+    } catch (e) {
+      console.error("[handleStart]", e);
+    }
+  }, [conversation, getSignedUrl, selectedTopic]);
+
+  const handleTopicChange = useCallback((topicId: number) => {
+    setSelectedTopic(topicId);
+    if (isActive) {
+      const label = TOPICS.find((t) => t.id === topicId)?.label;
+      conversation.sendContextualUpdate(`The user wants to switch topics. New topic: ${label}. Smoothly transition the conversation to this new topic.`);
+    }
+  }, [isActive, conversation]);
+
+  const handleEnd = useCallback(() => {
+    if (conversation.status === "disconnected") {
+      router.push("/");
+      return;
+    }
+    endingRef.current = true;
+    conversation.endSession();
+  }, [conversation, router]);
 
   return (
     <div className="flex flex-col md:flex-row h-full md:p-4 md:gap-4">
-      {!onboarded && <AiCallOnboarding onStart={() => setOnboarded(true)} />}
+      {!onboarded && <AiCallOnboarding onStart={handleOnboarded} />}
 
-      {/* Sidebar — desktop: left column, mobile: bottom panel */}
+      {/* Sidebar */}
       <aside
         className={`
           order-2 md:order-1
@@ -51,7 +152,7 @@ export default function AiCallPage() {
           transition-[filter] duration-500 ${blurClass}
         `}
       >
-        {/* Topics — desktop only */}
+        {/* Topics — desktop */}
         <div className="hidden md:flex flex-col gap-7 w-full">
           <h1 className="text-2xl font-semibold text-dark">Choose topic</h1>
           <div className="flex flex-col gap-2.5">
@@ -60,7 +161,7 @@ export default function AiCallPage() {
               return (
                 <button
                   key={topic.id}
-                  onClick={() => setSelectedTopic(topic.id)}
+                  onClick={() => handleTopicChange(topic.id)}
                   className={`flex items-center gap-3 w-full bg-white px-4 py-4 rounded-2xl text-left transition-colors border ${
                     isSelected ? "border-accent" : "border-transparent"
                   }`}
@@ -73,7 +174,7 @@ export default function AiCallPage() {
           </div>
         </div>
 
-        {/* Mobile: topic selector pill + end button */}
+        {/* Topics — mobile */}
         <div className="flex md:hidden items-center gap-2 w-full overflow-hidden">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1">
             {TOPICS.map((topic) => {
@@ -81,7 +182,7 @@ export default function AiCallPage() {
               return (
                 <button
                   key={topic.id}
-                  onClick={() => setSelectedTopic(topic.id)}
+                  onClick={() => handleTopicChange(topic.id)}
                   className={`flex items-center gap-1.5 shrink-0 px-3 py-2 rounded-full text-xs font-semibold border transition-colors ${
                     isSelected
                       ? "border-accent text-accent bg-accent-12"
@@ -105,7 +206,6 @@ export default function AiCallPage() {
           End session
         </button>
 
-
         {/* Confirm dialog */}
         {showEndConfirm && (
           <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4">
@@ -121,7 +221,7 @@ export default function AiCallPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => router.push("/")}
+                  onClick={handleEnd}
                   className="flex-1 h-[49px] rounded-2xl bg-accent text-white text-sm font-semibold shadow-[0_4px_0_rgba(27,127,203,1)] active:shadow-[0_1px_0_rgba(27,127,203,0.3)] active:translate-y-[3px] transition-all duration-100 ease-out"
                 >
                   End session
@@ -132,17 +232,16 @@ export default function AiCallPage() {
         )}
       </aside>
 
-      {/* Main content */}
+      {/* Main */}
       <main
         className={`
           order-1 md:order-2
           relative flex-1 bg-white md:border md:border-border md:rounded-3xl
           overflow-hidden flex flex-col items-center justify-center
-          cursor-pointer transition-[filter] duration-500 ${blurClass}
+          transition-[filter] duration-500 ${blurClass}
         `}
-        onClick={() => setAiState(isSpeaking ? "listening" : "speaking")}
       >
-        {/* End button — mobile top right */}
+        {/* End button — mobile */}
         <button
           onClick={() => setShowEndConfirm(true)}
           className="md:hidden absolute top-8 right-5 flex items-center justify-center size-11 rounded-full border border-border bg-white/80 backdrop-blur-sm z-10"
@@ -152,13 +251,17 @@ export default function AiCallPage() {
 
         {/* Timer */}
         <p className="absolute top-8 left-1/2 -translate-x-1/2 text-xl font-medium text-dark">
-          {timer}
+          {isActive ? timer : "0:00"}
         </p>
 
         {/* AI Avatar */}
         <div className="flex flex-col items-center gap-5">
           <div className="relative size-[132px]">
-            <div className="absolute inset-0 blur-[25px] opacity-20 rounded-full overflow-hidden">
+            <div
+              className={`absolute inset-0 blur-[25px] rounded-full overflow-hidden transition-opacity duration-300 ${
+                isSpeaking ? "opacity-40" : "opacity-20"
+              }`}
+            >
               <Image src="/ai-avatar-bg.png" alt="" fill className="object-cover" />
             </div>
             <div className="relative size-[132px] rounded-full overflow-hidden">
@@ -172,22 +275,50 @@ export default function AiCallPage() {
           <div className="flex flex-col items-center gap-2">
             <p className="text-xl font-semibold text-dark">AI Tutor</p>
             <div className="flex items-center gap-1.5">
-              <span className={`size-1 rounded-full transition-colors ${isSpeaking ? "bg-accent" : "bg-green"}`} />
-              <p className="text-xs text-dark">{isSpeaking ? "Speaking..." : "Listening..."}</p>
+              {conversation.status === "connecting" ? (
+                <>
+                  <span className="size-1 rounded-full bg-dark-20 animate-pulse" />
+                  <p className="text-xs text-dark">Connecting...</p>
+                </>
+              ) : isActive ? (
+                <>
+                  <span className={`size-1 rounded-full transition-colors ${isSpeaking ? "bg-accent" : "bg-green"}`} />
+                  <p className="text-xs text-dark">{isSpeaking ? "Speaking..." : "Listening..."}</p>
+                </>
+              ) : (
+                <>
+                  <span className="size-1 rounded-full bg-dark-20" />
+                  <p className="text-xs text-dark">Pick a topic and let&apos;s go</p>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Messages */}
-        {isSpeaking && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-5 text-center w-[234px]">
-            <p className="text-base font-medium text-dark-20">
-              Hey! I&apos;m your English tutor. Let&apos;s start to practise english
-            </p>
-            <p className="text-xl font-medium text-dark">How was your day?</p>
+        {/* Transcript */}
+        {isActive && (prevChunk || currentChunk) && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[280px] md:w-[360px] flex flex-col items-center gap-2 text-center">
+            {prevChunk && (
+              <p key={prevChunk} className="text-base text-dark-20 animate-chunk-out">
+                {prevChunk}
+              </p>
+            )}
+            {currentChunk && (
+              <p key={currentChunk} className="text-xl font-semibold text-dark animate-chunk-in">
+                {currentChunk}
+              </p>
+            )}
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+export default function AiCallPage() {
+  return (
+    <ConversationProvider>
+      <AiCallContent />
+    </ConversationProvider>
   );
 }
