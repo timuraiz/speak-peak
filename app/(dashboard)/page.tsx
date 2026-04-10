@@ -104,7 +104,7 @@ export default function Home() {
         <Fire streak={streak} />
       </div>
 
-      <div className="flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-3 md:gap-4 mt-5 md:mt-7 md:h-[495px]">
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-3 md:gap-4 mt-5 md:mt-7">
         <AiTutorCard />
         <div className="border border-border relative flex flex-col gap-6 md:gap-12 bg-background p-8 md:p-9 rounded-[20px] md:rounded-3xl lg:rounded-4xl col-span-2">
           {onlineCount !== null && <OnlineBadge count={onlineCount} className="absolute top-7 right-7" />}
