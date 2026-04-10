@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 
 const STEPS = [
-  { title: "Pick a topic", description: "Choose what you want to talk about." },
-  { title: "Just speak naturally", description: "Talk out loud — no typing needed." },
-  { title: "AI listens & responds", description: "The AI tutor keeps the conversation going." },
+  "Pick a topic to talk about",
+  "Speak naturally — no typing needed",
+  "AI listens, responds and keeps the conversation going",
 ];
 
 interface Props {
@@ -31,26 +31,26 @@ export default function AiCallOnboarding({ onStart }: Props) {
 
       {/* Card */}
       <div
-        className={`relative bg-white rounded-2xl p-8 w-full max-w-[400px] flex flex-col gap-7 transition-all duration-300 ${
+        className={`relative bg-background rounded-[28px] p-10 w-full max-w-[380px] flex flex-col items-center gap-8 text-center transition-all duration-300 ${
           visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
         }`}
       >
-        {/* Header */}
-        <div className="flex flex-col gap-1.5 text-center">
-          <span className="text-[10px] font-bold uppercase tracking-[0.4px] text-dark-50">
-            Before you start
-          </span>
-          <h2 className="text-xl font-semibold text-dark">Here&apos;s how it works</h2>
-        </div>
+        {/* Icon */}
+        <span className="text-[64px] leading-none select-none">🎙️</span>
 
-        {/* Steps */}
-        <div className="flex flex-col gap-4">
-          {STEPS.map((step, i) => (
-            <div key={i} className="flex flex-col gap-0.5 text-center">
-              <p className="text-sm font-semibold text-dark">{step.title}</p>
-              <p className="text-sm text-dark-50">{step.description}</p>
-            </div>
-          ))}
+        {/* Text */}
+        <div className="flex flex-col gap-3 w-full">
+          <p className="text-xs font-bold uppercase tracking-[0.48px] text-dark-50">
+            Before you start
+          </p>
+          <h2 className="text-2xl font-semibold text-dark">
+            Here&apos;s how it works
+          </h2>
+          <div className="flex flex-col gap-1.5 mt-1">
+            {STEPS.map((step, i) => (
+              <p key={i} className="text-sm text-dark-50">{step}</p>
+            ))}
+          </div>
         </div>
 
         {/* Button */}
