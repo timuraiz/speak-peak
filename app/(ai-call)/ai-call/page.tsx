@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import AiCallOnboarding from "@/app/components/AiCallOnboarding";
 
 const TOPICS = [
   { id: 1, emoji: "☕", label: "Ordering coffee" },
@@ -32,11 +33,13 @@ export default function AiCallPage() {
   const timer = useTimer();
   const [selectedTopic, setSelectedTopic] = useState(2);
   const [aiState, setAiState] = useState<AiState>("speaking");
+  const [onboarded, setOnboarded] = useState(false);
 
   const isSpeaking = aiState === "speaking";
 
   return (
     <div className="flex h-full p-4 gap-4">
+      {!onboarded && <AiCallOnboarding onStart={() => setOnboarded(true)} />}
       {/* Sidebar */}
       <aside className="w-[311px] shrink-0 flex flex-col justify-between bg-background border border-border rounded-3xl px-5 py-8">
         <div className="flex flex-col gap-7">
