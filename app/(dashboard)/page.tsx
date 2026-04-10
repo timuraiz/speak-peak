@@ -83,6 +83,14 @@ export default function Home() {
   const displayName = profile?.name ?? user?.email?.split("@")[0] ?? "there";
   const streak = useStreak(user?.id);
   const onlineCount = useOnlineCount(user?.id);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      const t = setTimeout(() => setVisible(true), 50);
+      return () => clearTimeout(t);
+    }
+  }, [loading]);
 
   if (loading)
     return (
@@ -96,7 +104,11 @@ export default function Home() {
   };
 
   return (
-    <div className="py-6 px-4 md:py-8.75 md:w-[520px] md:px-0 mx-auto min-h-full flex flex-col">
+    <div
+      className={`py-6 px-4 md:py-8.75 md:w-[520px] md:px-0 mx-auto min-h-full flex flex-col transition-all duration-500 ease-out ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+      }`}
+    >
       <div className="flex justify-between items-center">
         <h1 className="text-xl md:text-2xl font-semibold">
           Welcome back, {displayName} 👋
