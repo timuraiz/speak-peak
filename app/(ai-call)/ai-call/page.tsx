@@ -15,12 +15,10 @@ const TOPICS = [
 
 function useTimer() {
   const [seconds, setSeconds] = useState(0);
-
   useEffect(() => {
     const interval = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(interval);
   }, []);
-
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${s.toString().padStart(2, "0")}`;
@@ -36,13 +34,24 @@ export default function AiCallPage() {
   const [onboarded, setOnboarded] = useState(false);
 
   const isSpeaking = aiState === "speaking";
+  const blurClass = !onboarded ? "blur-sm" : "blur-0";
 
   return (
-    <div className="flex h-full p-4 gap-4">
+    <div className="flex flex-col md:flex-row h-full md:p-4 md:gap-4">
       {!onboarded && <AiCallOnboarding onStart={() => setOnboarded(true)} />}
-      {/* Sidebar */}
-      <aside className={`w-[311px] shrink-0 flex flex-col justify-between bg-background border border-border rounded-3xl px-5 py-8 transition-[filter] duration-500 ${!onboarded ? "blur-sm" : "blur-0"}`}>
-        <div className="flex flex-col gap-7">
+
+      {/* Sidebar — desktop: left column, mobile: bottom panel */}
+      <aside
+        className={`
+          order-2 md:order-1
+          md:w-[311px] md:shrink-0 md:flex-col md:rounded-3xl md:border md:border-border md:px-5 md:py-8 md:justify-between
+          flex flex-row items-center justify-between
+          px-4 py-3 border-t border-border bg-background
+          transition-[filter] duration-500 ${blurClass}
+        `}
+      >
+        {/* Topics — desktop only */}
+        <div className="hidden md:flex flex-col gap-7 w-full">
           <h1 className="text-2xl font-semibold text-dark">Choose topic</h1>
           <div className="flex flex-col gap-2.5">
             {TOPICS.map((topic) => {
@@ -51,8 +60,8 @@ export default function AiCallPage() {
                 <button
                   key={topic.id}
                   onClick={() => setSelectedTopic(topic.id)}
-                  className={`flex items-center gap-3 w-full bg-white px-4 py-4 rounded-2xl text-left transition-colors ${
-                    isSelected ? "border border-accent" : "border border-transparent"
+                  className={`flex items-center gap-3 w-full bg-white px-4 py-4 rounded-2xl text-left transition-colors border ${
+                    isSelected ? "border-accent" : "border-transparent"
                   }`}
                 >
                   <span className="text-2xl shrink-0">{topic.emoji}</span>
@@ -63,19 +72,53 @@ export default function AiCallPage() {
           </div>
         </div>
 
-        {/* End session */}
+        {/* Mobile: topic selector pill */}
+        <div className="flex md:hidden items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1 pr-3">
+          {TOPICS.map((topic) => {
+            const isSelected = selectedTopic === topic.id;
+            return (
+              <button
+                key={topic.id}
+                onClick={() => setSelectedTopic(topic.id)}
+                className={`flex items-center gap-1.5 shrink-0 px-3 py-2 rounded-full text-xs font-semibold border transition-colors ${
+                  isSelected
+                    ? "border-accent text-accent bg-accent-12"
+                    : "border-border text-dark bg-white"
+                }`}
+              >
+                <span>{topic.emoji}</span>
+                <span>{topic.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* End session — desktop */}
         <button
           onClick={() => router.push("/")}
-          className="flex items-center justify-center gap-2 w-full border border-border rounded-2xl px-6 py-4.5 text-sm font-semibold text-dark hover:bg-hover transition-colors"
+          className="hidden md:flex items-center justify-center gap-2 w-full border border-border rounded-2xl px-6 py-4.5 text-sm font-semibold text-dark hover:bg-hover transition-colors"
         >
           <Image src="/iconsax-close-circle.svg" alt="" width={16} height={16} />
           End session
+        </button>
+
+        {/* End session — mobile */}
+        <button
+          onClick={() => router.push("/")}
+          className="md:hidden shrink-0 flex items-center justify-center size-11 rounded-2xl border border-border bg-white"
+        >
+          <Image src="/iconsax-close-circle.svg" alt="" width={16} height={16} />
         </button>
       </aside>
 
       {/* Main content */}
       <main
-        className={`relative flex-1 bg-white border border-border rounded-3xl overflow-hidden flex flex-col items-center justify-center cursor-pointer transition-[filter] duration-500 ${!onboarded ? "blur-sm" : "blur-0"}`}
+        className={`
+          order-1 md:order-2
+          relative flex-1 bg-white md:border md:border-border md:rounded-3xl
+          overflow-hidden flex flex-col items-center justify-center
+          cursor-pointer transition-[filter] duration-500 ${blurClass}
+        `}
         onClick={() => setAiState(isSpeaking ? "listening" : "speaking")}
       >
         {/* Timer */}
@@ -86,41 +129,27 @@ export default function AiCallPage() {
         {/* AI Avatar */}
         <div className="flex flex-col items-center gap-5">
           <div className="relative size-[132px]">
-            {/* Glow */}
             <div className="absolute inset-0 blur-[25px] opacity-20 rounded-full overflow-hidden">
               <Image src="/ai-avatar-bg.png" alt="" fill className="object-cover" />
             </div>
-            {/* Circle bg */}
             <div className="relative size-[132px] rounded-full overflow-hidden">
               <Image src="/ai-avatar-bg.png" alt="" fill className="object-cover" />
             </div>
-            {/* Memoji */}
             <div className="absolute inset-0 overflow-hidden rounded-full">
-              <Image
-                src="/ai-memoji.png"
-                alt="AI tutor"
-                fill
-                className="object-cover object-top scale-110"
-              />
+              <Image src="/ai-memoji.png" alt="AI tutor" fill className="object-cover object-top scale-110" />
             </div>
           </div>
 
           <div className="flex flex-col items-center gap-2">
             <p className="text-xl font-semibold text-dark">AI Tutor</p>
             <div className="flex items-center gap-1.5">
-              <span
-                className={`size-1 rounded-full transition-colors ${
-                  isSpeaking ? "bg-accent" : "bg-green"
-                }`}
-              />
-              <p className="text-xs text-dark">
-                {isSpeaking ? "Speaking..." : "Listening..."}
-              </p>
+              <span className={`size-1 rounded-full transition-colors ${isSpeaking ? "bg-accent" : "bg-green"}`} />
+              <p className="text-xs text-dark">{isSpeaking ? "Speaking..." : "Listening..."}</p>
             </div>
           </div>
         </div>
 
-        {/* Messages — только когда ИИ говорит */}
+        {/* Messages */}
         {isSpeaking && (
           <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-5 text-center w-[234px]">
             <p className="text-base font-medium text-dark-20">
