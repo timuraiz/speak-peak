@@ -6,22 +6,13 @@ export default function NotFound() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="flex flex-col items-center gap-8 w-[300px] text-center">
         {/* 404 illustration */}
-        <div className="relative w-[300px] h-[189px]">
-          <Image
-            src="/404-shadow.png"
-            alt=""
-            fill
-            className="object-contain translate-y-3"
-            priority
-          />
-          <Image
-            src="/404.png"
-            alt="404"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
+        <Image
+          src="/404.svg"
+          alt="404"
+          width={300}
+          height={189}
+          priority
+        />
 
         {/* Text */}
         <div className="flex flex-col gap-3">
