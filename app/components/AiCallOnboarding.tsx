@@ -54,15 +54,12 @@ export default function AiCallOnboarding({ onStart }: Props) {
         </div>
 
         {/* Button */}
-        <div className="flex flex-col isolate pb-[45px] relative w-full">
-          <button
-            onClick={onStart}
-            className="relative z-[2] mb-[-45px] bg-accent text-white font-semibold text-sm h-[49px] w-full rounded-2xl shadow-[0_4px_0_rgba(27,127,203,1)] active:shadow-[0_1px_0_rgba(27,127,203,0.3)] active:translate-y-[3px] transition-all duration-100 ease-out"
-          >
-            Let&apos;s go
-          </button>
-          <div className="bg-[#1b7fcb] h-[49px] rounded-2xl w-full z-[1]" />
-        </div>
+        <button
+          onClick={onStart}
+          className="bg-accent text-white font-semibold text-sm h-[49px] w-full rounded-2xl shadow-[0_4px_0_rgba(27,127,203,1)] active:shadow-[0_1px_0_rgba(27,127,203,0.3)] active:translate-y-[3px] transition-all duration-100 ease-out"
+        >
+          Let&apos;s go
+        </button>
       </div>
     </div>
   );
