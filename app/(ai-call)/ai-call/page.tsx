@@ -108,7 +108,7 @@ export default function AiCallPage() {
         {/* End session — mobile: separate row above topics */}
         <button
           onClick={() => setShowEndConfirm(true)}
-          className="md:hidden shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold border border-red-24 text-red bg-red-24/30"
+          className="md:hidden shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold border border-border text-dark bg-white"
         >
           <Image src="/iconsax-close-circle.svg" alt="" width={14} height={14} className="opacity-70" />
           End
@@ -124,13 +124,13 @@ export default function AiCallPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowEndConfirm(false)}
-                  className="flex-1 h-[49px] rounded-2xl border border-border text-sm font-semibold text-dark hover:bg-hover transition-colors"
+                  className="flex-1 h-[49px] rounded-2xl border border-button-secondary text-sm font-semibold text-dark shadow-[0_4px_0_var(--color-button-secondary)] active:shadow-[0_1px_0_var(--color-button-secondary)] active:translate-y-[3px] transition-all duration-100 ease-out"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => router.push("/")}
-                  className="flex-1 h-[49px] rounded-2xl bg-red text-white text-sm font-semibold shadow-[0_4px_0_rgba(252,93,98,0.4)] active:shadow-none active:translate-y-[3px] transition-all duration-100"
+                  className="flex-1 h-[49px] rounded-2xl bg-accent text-white text-sm font-semibold shadow-[0_4px_0_rgba(27,127,203,1)] active:shadow-[0_1px_0_rgba(27,127,203,0.3)] active:translate-y-[3px] transition-all duration-100 ease-out"
                 >
                   End session
                 </button>
