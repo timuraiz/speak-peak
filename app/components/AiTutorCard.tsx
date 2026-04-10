@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function AiTutorCard() {
   return (
@@ -37,9 +38,9 @@ export default function AiTutorCard() {
         </div>
 
         {/* Button */}
-        <button className="w-fit bg-white text-dark font-semibold text-sm px-6 h-[49px] rounded-2xl shadow-[0_4px_0_rgba(255,255,255,0.25)] active:shadow-[0_1px_0_rgba(255,255,255,0.1)] active:translate-y-[3px] transition-all duration-100 ease-out">
+        <Link href="/ai-call" className="w-fit bg-white text-dark font-semibold text-sm px-6 h-[49px] rounded-2xl shadow-[0_4px_0_rgba(255,255,255,0.25)] active:shadow-[0_1px_0_rgba(255,255,255,0.1)] active:translate-y-[3px] transition-all duration-100 ease-out flex items-center">
           Start speaking
-        </button>
+        </Link>
       </div>
     </div>
   );
