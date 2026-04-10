@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import AiCallOnboarding from "@/app/components/AiCallOnboarding";
 
 const TOPICS = [
-  { id: 1, emoji: "☕", label: "Ordering coffee" },
-  { id: 2, emoji: "💼", label: "Job interview" },
-  { id: 3, emoji: "✈️", label: "At the airport" },
-  { id: 4, emoji: "🎉", label: "Small talk at a party" },
-  { id: 5, emoji: "📞", label: "Phone complaint" },
+  { id: 1, icon: "/topic-coffee.svg", label: "Ordering coffee" },
+  { id: 2, icon: "/topic-job.svg", label: "Job interview" },
+  { id: 3, icon: "/topic-airport.svg", label: "At the airport" },
+  { id: 4, icon: "/topic-party.svg", label: "Small talk at a party" },
+  { id: 5, icon: "/topic-phone.svg", label: "Phone complaint" },
 ];
 
 function useTimer() {
@@ -64,7 +64,7 @@ export default function AiCallPage() {
                     isSelected ? "border-accent" : "border-transparent"
                   }`}
                 >
-                  <span className="text-2xl shrink-0">{topic.emoji}</span>
+                  <Image src={topic.icon} alt="" width={36} height={36} className="shrink-0" />
                   <span className="text-base font-semibold text-dark">{topic.label}</span>
                 </button>
               );
@@ -86,7 +86,7 @@ export default function AiCallPage() {
                     : "border-border text-dark bg-white"
                 }`}
               >
-                <span>{topic.emoji}</span>
+                <Image src={topic.icon} alt="" width={20} height={20} />
                 <span>{topic.label}</span>
               </button>
             );
