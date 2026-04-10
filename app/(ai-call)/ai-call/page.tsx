@@ -32,6 +32,7 @@ export default function AiCallPage() {
   const [selectedTopic, setSelectedTopic] = useState(2);
   const [aiState, setAiState] = useState<AiState>("speaking");
   const [onboarded, setOnboarded] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   const isSpeaking = aiState === "speaking";
   const blurClass = !onboarded ? "blur-sm" : "blur-0";
@@ -72,43 +73,71 @@ export default function AiCallPage() {
           </div>
         </div>
 
-        {/* Mobile: topic selector pill */}
-        <div className="flex md:hidden items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1 pr-3">
-          {TOPICS.map((topic) => {
-            const isSelected = selectedTopic === topic.id;
-            return (
-              <button
-                key={topic.id}
-                onClick={() => setSelectedTopic(topic.id)}
-                className={`flex items-center gap-1.5 shrink-0 px-3 py-2 rounded-full text-xs font-semibold border transition-colors ${
-                  isSelected
-                    ? "border-accent text-accent bg-accent-12"
-                    : "border-border text-dark bg-white"
-                }`}
-              >
-                <Image src={topic.icon} alt="" width={20} height={20} />
-                <span>{topic.label}</span>
-              </button>
-            );
-          })}
+        {/* Mobile: topic selector pill + end button */}
+        <div className="flex md:hidden items-center gap-2 w-full overflow-hidden">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1">
+            {TOPICS.map((topic) => {
+              const isSelected = selectedTopic === topic.id;
+              return (
+                <button
+                  key={topic.id}
+                  onClick={() => setSelectedTopic(topic.id)}
+                  className={`flex items-center gap-1.5 shrink-0 px-3 py-2 rounded-full text-xs font-semibold border transition-colors ${
+                    isSelected
+                      ? "border-accent text-accent bg-accent-12"
+                      : "border-border text-dark bg-white"
+                  }`}
+                >
+                  <Image src={topic.icon} alt="" width={20} height={20} />
+                  <span>{topic.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* End session — desktop */}
         <button
-          onClick={() => router.push("/")}
+          onClick={() => setShowEndConfirm(true)}
           className="hidden md:flex items-center justify-center gap-2 w-full border border-border rounded-2xl px-6 py-4.5 text-sm font-semibold text-dark hover:bg-hover transition-colors"
         >
           <Image src="/iconsax-close-circle.svg" alt="" width={16} height={16} />
           End session
         </button>
 
-        {/* End session — mobile */}
+        {/* End session — mobile: separate row above topics */}
         <button
-          onClick={() => router.push("/")}
-          className="md:hidden shrink-0 flex items-center justify-center size-11 rounded-2xl border border-border bg-white"
+          onClick={() => setShowEndConfirm(true)}
+          className="md:hidden shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold border border-red-24 text-red bg-red-24/30"
         >
-          <Image src="/iconsax-close-circle.svg" alt="" width={16} height={16} />
+          <Image src="/iconsax-close-circle.svg" alt="" width={14} height={14} className="opacity-70" />
+          End
         </button>
+
+        {/* Confirm dialog */}
+        {showEndConfirm && (
+          <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4">
+            <div className="absolute inset-0 bg-dark/20 backdrop-blur-sm" onClick={() => setShowEndConfirm(false)} />
+            <div className="relative bg-white rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 text-center">
+              <p className="text-base font-semibold text-dark">End session?</p>
+              <p className="text-sm text-dark-50">Your conversation will be stopped.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowEndConfirm(false)}
+                  className="flex-1 h-[49px] rounded-2xl border border-border text-sm font-semibold text-dark hover:bg-hover transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => router.push("/")}
+                  className="flex-1 h-[49px] rounded-2xl bg-red text-white text-sm font-semibold shadow-[0_4px_0_rgba(252,93,98,0.4)] active:shadow-none active:translate-y-[3px] transition-all duration-100"
+                >
+                  End session
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* Main content */}
