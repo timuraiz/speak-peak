@@ -28,7 +28,7 @@ function useTimer(running: boolean) {
 
 function AiCallContent() {
   const router = useRouter();
-  const [selectedTopic, setSelectedTopic] = useState(2);
+  const [selectedTopic, setSelectedTopic] = useState<number | null>(null);
   const [onboarded, setOnboarded] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
 
@@ -108,11 +108,14 @@ function AiCallContent() {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       const signedUrl = await getSignedUrl();
+      const topic = TOPICS.find((t) => t.id === selectedTopic);
       conversation.startSession({
         signedUrl,
         overrides: {
           agent: {
-            firstMessage: `Let's practice: ${TOPICS.find((t) => t.id === selectedTopic)?.label}.`,
+            firstMessage: topic
+              ? `Let's practice: ${topic.label}.`
+              : `Hey! I'm your English tutor. Pick a topic and let's get started!`,
           },
         },
       });
@@ -123,11 +126,11 @@ function AiCallContent() {
 
   const handleTopicChange = useCallback((topicId: number) => {
     setSelectedTopic(topicId);
-    if (isActive) {
+    if (conversation.status === "connected") {
       const label = TOPICS.find((t) => t.id === topicId)?.label;
       conversation.sendContextualUpdate(`The user wants to switch topics. New topic: ${label}. Smoothly transition the conversation to this new topic.`);
     }
-  }, [isActive, conversation]);
+  }, [conversation]);
 
   const handleEnd = useCallback(() => {
     if (conversation.status === "disconnected") {
