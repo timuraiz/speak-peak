@@ -3,21 +3,9 @@
 import { useEffect, useState } from "react";
 
 const STEPS = [
-  {
-    emoji: "🎯",
-    title: "Pick a topic",
-    description: "Choose what you want to talk about — job interview, small talk, travel, or anything else.",
-  },
-  {
-    emoji: "🎙️",
-    title: "Just speak naturally",
-    description: "Talk out loud like you would with a real person. No typing needed.",
-  },
-  {
-    emoji: "✨",
-    title: "AI listens & responds",
-    description: "The AI tutor will reply, ask follow-up questions and keep the conversation going.",
-  },
+  { title: "Pick a topic", description: "Choose what you want to talk about." },
+  { title: "Just speak naturally", description: "Talk out loud — no typing needed." },
+  { title: "AI listens & responds", description: "The AI tutor keeps the conversation going." },
 ];
 
 interface Props {
@@ -34,7 +22,7 @@ export default function AiCallOnboarding({ onStart }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -43,29 +31,24 @@ export default function AiCallOnboarding({ onStart }: Props) {
 
       {/* Card */}
       <div
-        className={`relative bg-background rounded-[28px] p-6 w-full max-w-[380px] flex flex-col gap-5 transition-all duration-300 ${
-          visible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-95"
+        className={`relative bg-white rounded-2xl p-8 w-full max-w-[400px] flex flex-col gap-7 transition-all duration-300 ${
+          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
         }`}
       >
         {/* Header */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5 text-center">
           <span className="text-[10px] font-bold uppercase tracking-[0.4px] text-dark-50">
             Before you start
           </span>
-          <h2 className="text-[16px] font-semibold text-dark">
-            Here&apos;s how it works
-          </h2>
+          <h2 className="text-xl font-semibold text-dark">Here&apos;s how it works</h2>
         </div>
 
         {/* Steps */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {STEPS.map((step, i) => (
-            <div key={i} className="bg-white rounded-2xl px-4 py-4 flex items-start gap-3.5">
-              <span className="text-2xl shrink-0 leading-none mt-0.5">{step.emoji}</span>
-              <div className="flex flex-col gap-0.5">
-                <p className="text-sm font-semibold text-dark">{step.title}</p>
-                <p className="text-xs text-dark-50 leading-relaxed">{step.description}</p>
-              </div>
+            <div key={i} className="flex flex-col gap-0.5 text-center">
+              <p className="text-sm font-semibold text-dark">{step.title}</p>
+              <p className="text-sm text-dark-50">{step.description}</p>
             </div>
           ))}
         </div>
