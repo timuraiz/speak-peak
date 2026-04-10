@@ -105,14 +105,6 @@ export default function AiCallPage() {
           End session
         </button>
 
-        {/* End session — mobile: separate row above topics */}
-        <button
-          onClick={() => setShowEndConfirm(true)}
-          className="md:hidden shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold border border-border text-dark bg-white"
-        >
-          <Image src="/iconsax-close-circle.svg" alt="" width={14} height={14} className="opacity-70" />
-          End
-        </button>
 
         {/* Confirm dialog */}
         {showEndConfirm && (
@@ -150,6 +142,14 @@ export default function AiCallPage() {
         `}
         onClick={() => setAiState(isSpeaking ? "listening" : "speaking")}
       >
+        {/* End button — mobile top right */}
+        <button
+          onClick={() => setShowEndConfirm(true)}
+          className="md:hidden absolute top-4 right-4 flex items-center justify-center size-9 rounded-full border border-border bg-white/80 backdrop-blur-sm z-10"
+        >
+          <Image src="/iconsax-close-circle.svg" alt="" width={16} height={16} />
+        </button>
+
         {/* Timer */}
         <p className="absolute top-8 left-1/2 -translate-x-1/2 text-xl font-medium text-dark">
           {timer}
