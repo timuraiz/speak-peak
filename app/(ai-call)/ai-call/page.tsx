@@ -41,7 +41,7 @@ export default function AiCallPage() {
     <div className="flex h-full p-4 gap-4">
       {!onboarded && <AiCallOnboarding onStart={() => setOnboarded(true)} />}
       {/* Sidebar */}
-      <aside className="w-[311px] shrink-0 flex flex-col justify-between bg-background border border-border rounded-3xl px-5 py-8">
+      <aside className={`w-[311px] shrink-0 flex flex-col justify-between bg-background border border-border rounded-3xl px-5 py-8 transition-[filter] duration-500 ${!onboarded ? "blur-sm" : "blur-0"}`}>
         <div className="flex flex-col gap-7">
           <h1 className="text-2xl font-semibold text-dark">Choose topic</h1>
           <div className="flex flex-col gap-2.5">
@@ -75,7 +75,7 @@ export default function AiCallPage() {
 
       {/* Main content */}
       <main
-        className="relative flex-1 bg-white border border-border rounded-3xl overflow-hidden flex flex-col items-center justify-center cursor-pointer"
+        className={`relative flex-1 bg-white border border-border rounded-3xl overflow-hidden flex flex-col items-center justify-center cursor-pointer transition-[filter] duration-500 ${!onboarded ? "blur-sm" : "blur-0"}`}
         onClick={() => setAiState(isSpeaking ? "listening" : "speaking")}
       >
         {/* Timer */}
