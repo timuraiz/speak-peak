@@ -12,6 +12,7 @@ import OnlineBadge from "../components/OnlineBadge";
 import TimeSpentCard from "../components/TimeSpentCard";
 import DailyGoal from "../components/DailyGoal";
 import SnackBar from "../components/SnackBar";
+import AiTutorCard from "../components/AiTutorCard";
 
 function useStreak(userId: string | undefined) {
   const [streak, setStreak] = useState(0);
@@ -104,6 +105,7 @@ export default function Home() {
       </div>
 
       <div className="flex flex-col md:grid md:grid-cols-2 md:grid-rows-2 gap-3 md:gap-4 mt-5 md:mt-7 md:h-[495px]">
+        <AiTutorCard />
         <div className="border border-border relative flex flex-col gap-6 md:gap-12 bg-background p-8 md:p-9 rounded-[20px] md:rounded-3xl lg:rounded-4xl col-span-2">
           {onlineCount !== null && <OnlineBadge count={onlineCount} className="absolute top-7 right-7" />}
           <div className="flex flex-col gap-4.5">
