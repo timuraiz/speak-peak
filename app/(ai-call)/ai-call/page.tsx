@@ -145,9 +145,9 @@ export default function AiCallPage() {
         {/* End button — mobile top right */}
         <button
           onClick={() => setShowEndConfirm(true)}
-          className="md:hidden absolute top-4 right-4 flex items-center justify-center size-9 rounded-full border border-border bg-white/80 backdrop-blur-sm z-10"
+          className="md:hidden absolute top-8 right-5 flex items-center justify-center size-11 rounded-full border border-border bg-white/80 backdrop-blur-sm z-10"
         >
-          <Image src="/iconsax-close-circle.svg" alt="" width={16} height={16} />
+          <Image src="/iconsax-close-circle.svg" alt="" width={20} height={20} />
         </button>
 
         {/* Timer */}
