@@ -17,13 +17,13 @@ const TOPICS = [
 function useTimer(running: boolean) {
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
-    if (!running) return;
+    if (!running) { setSeconds(0); return; }
     const interval = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(interval);
   }, [running]);
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
+  return { display: `${m}:${s.toString().padStart(2, "0")}`, seconds };
 }
 
 function AiCallContent() {
@@ -33,6 +33,7 @@ function AiCallContent() {
   const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   const endingRef = useRef(false);
+  const timerSecondsRef = useRef(0);
 
   const [prevChunk, setPrevChunk] = useState("");
   const [currentChunk, setCurrentChunk] = useState("");
@@ -43,8 +44,19 @@ function AiCallContent() {
     timersRef.current = [];
   };
 
+  const saveSession = useCallback(() => {
+    const secs = timerSecondsRef.current;
+    if (secs < 5) return;
+    fetch("/api/sessions/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ duration_seconds: secs }),
+    }).catch(() => {});
+  }, []);
+
   const conversation = useConversation({
     onDisconnect: () => {
+      saveSession();
       if (endingRef.current) router.push("/");
     },
     onMessage: ({ source, message }) => {
@@ -91,7 +103,8 @@ function AiCallContent() {
   });
   const isActive = conversation.status === "connected";
   const isSpeaking = conversation.mode === "speaking";
-  const timer = useTimer(isActive);
+  const { display: timerDisplay, seconds: timerSeconds } = useTimer(isActive);
+  timerSecondsRef.current = timerSeconds;
   const blurClass = !onboarded ? "blur-sm" : "blur-0";
 
   const getSignedUrl = useCallback(async (): Promise<string> => {
@@ -254,7 +267,7 @@ function AiCallContent() {
 
         {/* Timer */}
         <p className="absolute top-8 left-1/2 -translate-x-1/2 text-xl font-medium text-dark">
-          {isActive ? timer : "0:00"}
+          {isActive ? timerDisplay : "0:00"}
         </p>
 
         {/* AI Avatar */}
