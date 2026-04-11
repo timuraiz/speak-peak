@@ -69,7 +69,7 @@ export default function TimeSpentCard() {
       <h2 className="text-[28px] md:text-[30px] lg:text-[32px] font-semibold text-dark">
         {formatTotal(totalSeconds)}
       </h2>
-      <p className="text-sm font-normal text-dark-50">Last 30 days</p>
+      <p className="text-sm font-normal text-dark-50">Spoken in the last 30 days</p>
       <div className="grid grid-cols-9 grid-rows-4 mt-5 gap-2">
         {dailyData.map((timeSpent, i) => (
           <div
